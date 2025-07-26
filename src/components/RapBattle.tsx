@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { z } from "zod";
@@ -9,15 +9,21 @@ import {
   generateRapLyrics,
   type GenerateRapLyricsOutput,
 } from "@/ai/flows/generate-rap-lyrics";
+import {
+  generateTtsAudio,
+  type GenerateTtsAudioOutput,
+} from "@/ai/flows/generate-tts-audio";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Download, Share2, Music, MicVocal, Wand2, Play } from "lucide-react";
+import { Loader2, Download, Share2, Music, MicVocal, Wand2, Play, Pause, AlertTriangle, Speaker } from "lucide-react";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { Progress } from "./ui/progress";
 
 const formSchema = z.object({
   topic: z
@@ -29,22 +35,30 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const characters = [
-  { id: "peter", name: "Peter Griffin", image: "https://placehold.co/150x150.png", hint: "cartoon dad" },
-  { id: "shrek", name: "Shrek", image: "https://placehold.co/150x150.png", hint: "green ogre" },
+  { id: "peter", name: "Peter Griffin", image: "https://placehold.co/150x150.png", hint: "cartoon dad", voiceId: "en-US-Wavenet-D" },
+  { id: "shrek", name: "Shrek", image: "https://placehold.co/150x150.png", hint: "green ogre", voiceId: "en-US-Wavenet-B" },
 ];
 
 const beats = [
-  { id: 1, name: "90s Boom Bap", bpm: 92, image: "https://placehold.co/200x200.png", hint: "old school radio" },
-  { id: 2, name: "Lo-Fi Chill", bpm: 85, image: "https://placehold.co/200x200.png", hint: "study anime" },
-  { id: 3, name: "Trap Banger", bpm: 140, image: "https://placehold.co/200x200.png", hint: "sound system" },
-  { id: 4, name: "West Coast Vibe", bpm: 95, image: "https://placehold.co/200x200.png", hint: "convertible sunset" },
+    { id: 1, name: '90s Boom Bap', bpm: 92, image: 'https://placehold.co/200x200.png', hint: 'old school radio', audioSrc: '/audio/90s-boom-bap.mp3' },
+    { id: 2, name: 'Lo-Fi Chill', bpm: 85, image: 'https://placehold.co/200x200.png', hint: 'study anime', audioSrc: '/audio/lo-fi-chill.mp3' },
+    { id: 3, name: 'Trap Banger', bpm: 140, image: 'https://placehold.co/200x200.png', hint: 'sound system', audioSrc: '/audio/trap-banger.mp3' },
+    { id: 4, name: 'West Coast Vibe', bpm: 95, image: 'https://placehold.co/200x200.png', hint: 'convertible sunset', audioSrc: '/audio/west-coast-vibe.mp3' },
 ];
 
 export function RapBattle() {
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingStatus, setLoadingStatus] = useState("");
   const [lyrics, setLyrics] = useState<GenerateRapLyricsOutput | null>(null);
+  const [ttsAudio, setTtsAudio] = useState<GenerateTtsAudioOutput | null>(null);
   const [selectedBeat, setSelectedBeat] = useState(beats[0]);
   const [isResultsVisible, setIsResultsVisible] = useState(false);
+  const [isBeatPlaying, setIsBeatPlaying] = useState(false);
+  const [isVocalsPlaying, setIsVocalsPlaying] = useState(false);
+  const [audioError, setAudioError] = useState(false);
+  
+  const beatAudioRef = useRef<HTMLAudioElement | null>(null);
+  const vocalsAudioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
   const form = useForm<FormValues>({
@@ -62,20 +76,87 @@ export function RapBattle() {
       setIsResultsVisible(false);
     }
   }, [lyrics]);
+  
+  useEffect(() => {
+    if (beatAudioRef.current) {
+      beatAudioRef.current.pause();
+      beatAudioRef.current = null;
+    }
+    const audio = new Audio(selectedBeat.audioSrc);
+    audio.loop = true;
+    audio.addEventListener('error', () => { setAudioError(true); setIsBeatPlaying(false); });
+    beatAudioRef.current = audio;
+    setAudioError(false);
+    setIsBeatPlaying(false);
+
+    return () => {
+      audio.pause();
+    }
+  }, [selectedBeat]);
+
+  useEffect(() => {
+    if (ttsAudio?.audioDataUri) {
+        if (vocalsAudioRef.current) {
+            vocalsAudioRef.current.pause();
+            vocalsAudioRef.current = null;
+        }
+        const audio = new Audio(ttsAudio.audioDataUri);
+        audio.addEventListener('ended', () => setIsVocalsPlaying(false));
+        vocalsAudioRef.current = audio;
+        setIsVocalsPlaying(false);
+
+        return () => {
+            audio.pause();
+        }
+    }
+  }, [ttsAudio]);
+
+  const toggleBeatPlayback = () => {
+    if (audioError || !beatAudioRef.current) return;
+    if (isBeatPlaying) {
+      beatAudioRef.current?.pause();
+    } else {
+      beatAudioRef.current?.play().catch(() => setAudioError(true));
+    }
+    setIsBeatPlaying(!isBeatPlaying);
+  };
+
+  const toggleVocalsPlayback = () => {
+    if (!vocalsAudioRef.current) return;
+    if (isVocalsPlaying) {
+        vocalsAudioRef.current.pause();
+        vocalsAudioRef.current.currentTime = 0;
+    } else {
+        vocalsAudioRef.current.play();
+    }
+    setIsVocalsPlaying(!isVocalsPlaying);
+  };
 
   const handleGenerate: SubmitHandler<FormValues> = async (data) => {
     setIsLoading(true);
     setLyrics(null);
+    setTtsAudio(null);
     try {
-      const result = await generateRapLyrics({
+      setLoadingStatus("Generating lyrical fire...");
+      const lyricsResult = await generateRapLyrics({
         character1: characters[0].name,
         character2: characters[1].name,
         topic: data.topic,
         numVerses: 2,
       });
-      setLyrics(result);
+      setLyrics(lyricsResult);
+
+      setLoadingStatus("Recording the vocal track...");
+      const ttsResult = await generateTtsAudio({
+        lyricsCharacter1: lyricsResult.lyricsCharacter1,
+        character1Voice: characters[0].voiceId,
+        lyricsCharacter2: lyricsResult.lyricsCharacter2,
+        character2Voice: characters[1].voiceId,
+      });
+      setTtsAudio(ttsResult);
+
     } catch (error) {
-      console.error("Failed to generate lyrics:", error);
+      console.error("Failed during generation:", error);
       toast({
         variant: "destructive",
         title: "Uh oh! Something went wrong.",
@@ -84,12 +165,18 @@ export function RapBattle() {
       });
     } finally {
       setIsLoading(false);
+      setLoadingStatus("");
     }
   };
   
   const resetBattle = () => {
     setLyrics(null);
+    setTtsAudio(null);
     form.reset();
+    beatAudioRef.current?.pause();
+    vocalsAudioRef.current?.pause();
+    setIsBeatPlaying(false);
+    setIsVocalsPlaying(false);
   }
 
   if (lyrics) {
@@ -110,15 +197,20 @@ export function RapBattle() {
                 <div className="flex items-center gap-4">
                     <Image src={selectedBeat.image} alt={selectedBeat.name} width={80} height={80} className="rounded-lg shadow-md aspect-square object-cover" data-ai-hint={selectedBeat.hint} />
                     <div>
-                        <p className="text-sm text-muted-foreground">Now Playing</p>
+                        <p className="text-sm text-muted-foreground">The Beat</p>
                         <p className="font-bold text-lg font-headline">{selectedBeat.name}</p>
                     </div>
                 </div>
                 
                 <div className="flex items-center gap-4">
-                     <Button size="lg" className="rounded-full w-20 h-20" aria-label="Play Battle">
-                        <Play className="w-10 h-10 ml-1" />
+                     <Button size="lg" className="rounded-full w-20 h-20" aria-label="Play Beat" onClick={toggleBeatPlayback} disabled={audioError}>
+                        {isBeatPlaying ? <Pause className="w-10 h-10" /> : <Play className="w-10 h-10 ml-1" />}
                     </Button>
+                    {ttsAudio && (
+                        <Button size="lg" className="rounded-full w-20 h-20" variant="secondary" aria-label="Play Vocals" onClick={toggleVocalsPlayback}>
+                            {isVocalsPlaying ? <Pause className="w-10 h-10" /> : <Speaker className="w-10 h-10" />}
+                        </Button>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -126,6 +218,26 @@ export function RapBattle() {
                     <Button variant="outline"><Share2 className="h-5 w-5"/> <span className="hidden sm:inline ml-2">Share</span></Button>
                 </div>
             </div>
+            {audioError && (
+                 <div className="p-4 border-t border-destructive/20 bg-destructive/10">
+                    <Alert variant="destructive" className="border-0">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>Audio Error</AlertTitle>
+                        <AlertDescription>
+                            Could not load the beat. Please ensure it exists in the `/public/audio` directory.
+                        </AlertDescription>
+                    </Alert>
+                </div>
+            )}
+             {!ttsAudio && isLoading && (
+                <div className="p-4 border-t border-border">
+                    <div className="flex items-center gap-4">
+                        <Loader2 className="h-5 w-5 animate-spin"/>
+                        <p className="text-sm text-muted-foreground">{loadingStatus}</p>
+                    </div>
+                    <Progress value={50} className="w-full mt-2 h-2" />
+                </div>
+            )}
         </Card>
 
         <div className="grid md:grid-cols-2 gap-8">
@@ -250,6 +362,7 @@ export function RapBattle() {
                         </Card>
                     ))}
                 </div>
+                {audioError && <Alert variant="destructive" className="mt-4"><AlertTriangle className="h-4 w-4" /><AlertTitle>Audio File Not Found</AlertTitle><AlertDescription>Could not load '{selectedBeat.name}'. Make sure the file exists at `public{selectedBeat.audioSrc}`.</AlertDescription></Alert>}
             </CardContent>
           </Card>
           
@@ -287,7 +400,7 @@ export function RapBattle() {
                     ) : (
                     <MicVocal className="mr-2 h-6 w-6" />
                     )}
-                    {isLoading ? "Generating Lyrical Fire..." : "Start the Rumble!"}
+                    {isLoading ? loadingStatus : "Start the Rumble!"}
                 </Button>
             </CardFooter>
           </Card>
