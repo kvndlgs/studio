@@ -35,21 +35,21 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const characters = [
-  { id: "peter", name: "Peter Griffin", image: "/img/peter.png", hint: "You are Peter Griffin from Family Guy", voiceId: "en-US-Wavenet-D" },
-  { id: "shrek", name: "Shrek", image: "https://placehold.co/150x150.png", hint: "You are Shrek", voiceId: "en-US-Wavenet-B" },
-  { id: "batman", name: "Batman 66'", image: "/img/batman.png", hint: "You are batman from 1966", voiceId: "en-US-Wavenet-B" },
-  { id: "bender", name: "Bender", image: "/img/bender.png", hint: "You are bender from Futurama", voiceId: "en-US-Wavenet-A"},
-  { id: "realisticfishhead", name: "Realistic Fish Head", image: "/img/realisticfishhead.png", hint: "You are Realistic Fish Head, news anchor from Bikini Bottom.", voiceId: "en-US-Wavenet-A"},
-  { id: "shaggy", name: "Shaggy", image: "/img/shaggy.png", hint: "You are Shaggy from Scooby Doo.", voiceId: "en-US-Wavenet-A"},
-
+  { id: "peter", name: "Peter Griffin", image: "/img/peter.png", hint: "You are Peter Griffin from Family Guy", voiceId: "fenrir" }, // Changed voiceId
+  { id: "shrek", name: "Shrek", image: "/img/shrek.png", hint: "You are Shrek", voiceId: "puck" }, // Changed voiceId
+  { id: "batman", name: "Batman 66'", image: "/img/batman.png", hint: "You are batman from 1966", voiceId: "charon" }, // Changed voiceId
+  { id: "bender", name: "Bender", image: "/img/bender.png", hint: "You are bender from Futurama", voiceId: "zephyr"}, // Changed voiceId
+  { id: "realisticfishhead", name: "Realistic Fish Head", image: "/img/realisticfishhead.png", hint: "You are Realistic Fish Head, news anchor from Bikini Bottom.", voiceId: "vindemiatrix"}, // Changed voiceId
+  { id: "shaggy", name: "Shaggy", image: "/img/shaggy.png", hint: "You are Shaggy from Scooby Doo.", voiceId: "umbriel"}, // Changed voiceId
 ];
 
+
 const beats = [
-    { id: 1, name: 'Shook Ones Pt, II', bpm: 92, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLqmLsMP3un3Ny3E0kMngdZk-Lsh4D8eBDHA&s', hint: 'Classic Rap Battle Instrumental', audioSrc: '/audio/Shook Ones, Pt II - Mobb Deep.mp3' },
-    { id: 2, name: 'Who Shot Ya', bpm: 90, image: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/8a/Biggie-_Who_Shot_Ya.jpg/250px-Biggie-_Who_Shot_Ya.jpg', hint: 'study anime', audioSrc: '/audio/Notorious B.I.G - Who Shot Ya.mp3' },
-    { id: 3, name: 'Hit Em Up', bpm: 95, image: 'https://upload.wikimedia.org/wikipedia/en/thumb/3/3e/2pac_-_Hit_%27Em_Up_promo.jpg/250px-2pac_-_Hit_%27Em_Up_promo.jpg', hint: 'sound system', audioSrc: '/audio/2Pac - Hit Em Up.mp3' },
-    { id: 4, name: 'Not Like Us', bpm: 102, image: 'https://upload.wikimedia.org/wikipedia/en/thumb/6/61/Kendrick_Lamar_-_Not_Like_Us.png/250px-Kendrick_Lamar_-_Not_Like_Us.png', hint: 'Classic Rap Battle Instrumental', audioSrc: '/audio/Kendrick Lamar - Not Like Us.mp3' },
-    { id: 5, name: 'Family Matters', bpm: 82, image: 'https://upload.wikimedia.org/wikipedia/en/thumb/f/f8/Drake_-_Family_Matters.jpg/250px-Drake_-_Family_Matters.jpg', hint: 'Classic Rap Battle Instrumental', audioSrc: '/audio/Drake - Family Matters'},
+    { id: 1, name: 'Shook Ones Pt, II', bpm: 92, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLqmLsMP3un3Ny3E0kMngdZk-Lsh4D8eBDHA&s', hint: 'Classic Rap Battle Instrumental', audioSrc: '/audio/shookones.mp3' },
+    { id: 2, name: 'Who Shot Ya', bpm: 90, image: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/8a/Biggie-_Who_Shot_Ya.jpg/250px-Biggie-_Who_Shot_Ya.jpg', hint: 'study anime', audioSrc: '/audio/whoshotya.mp3' },
+    { id: 3, name: 'Hit Em Up', bpm: 95, image: 'https://upload.wikimedia.org/wikipedia/en/thumb/3/3e/2pac_-_Hit_%27Em_Up_promo.jpg/250px-2pac_-_Hit_%27Em_Up_promo.jpg', hint: 'sound system', audioSrc: '/audio/hitemup.mp3' },
+    { id: 4, name: 'Not Like Us', bpm: 102, image: 'https://upload.wikimedia.org/wikipedia/en/thumb/6/61/Kendrick_Lamar_-_Not_Like_Us.png/250px-Kendrick_Lamar_-_Not_Like_Us.png', hint: 'Classic Rap Battle Instrumental', audioSrc: '/audio/notlikeus.mp3' },
+    { id: 5, name: 'Family Matters', bpm: 82, image: 'https://upload.wikimedia.org/wikipedia/en/thumb/f/f8/Drake_-_Family_Matters.jpg/250px-Drake_-_Family_Matters.jpg', hint: 'Classic Rap Battle Instrumental', audioSrc: '/audio/familymatters.mp3'},
 ];
 
 export function RapBattle() {
@@ -137,6 +137,7 @@ export function RapBattle() {
     }
     setIsVocalsPlaying(!isVocalsPlaying);
   };
+
 
   const handleGenerate: SubmitHandler<FormValues> = async (data) => {
     setIsLoading(true);
@@ -286,7 +287,7 @@ export function RapBattle() {
     <section className="container max-w-5xl py-12">
       <div className="text-center mb-10">
         <h2 className="text-4xl font-bold font-headline tracking-tighter sm:text-5xl md:text-6xl">
-          Create Your Rap Battle
+          Create Your Battle
         </h2>
         <p className="mt-4 text-muted-foreground md:text-xl">
           Choose your fighters, pick a beat, and let the AI lyrical warfare
@@ -330,6 +331,39 @@ export function RapBattle() {
                     data-ai-hint={characters[1].hint}
                   />
                   <h3 className="text-xl font-bold font-headline">{characters[1].name}</h3>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <Image
+                    src={characters[2].image}
+                    alt={characters[2].name}
+                    width={150}
+                    height={150}
+                    className="rounded-full border-4 border-primary shadow-lg"
+                    data-ai-hint={characters[2].hint}
+                  />
+                  <h3 className="text-xl font-bold font-headline">{characters[0].name}</h3>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <Image
+                    src={characters[3].image}
+                    alt={characters[3].name}
+                    width={150}
+                    height={150}
+                    className="rounded-full border-4 border-primary shadow-lg"
+                    data-ai-hint={characters[3].hint}
+                  />
+                  <h3 className="text-xl font-bold font-headline">{characters[0].name}</h3>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <Image
+                    src={characters[4].image}
+                    alt={characters[4].name}
+                    width={150}
+                    height={150}
+                    className="rounded-full border-4 border-primary shadow-lg"
+                    data-ai-hint={characters[4].hint}
+                  />
+                  <h3 className="text-xl font-bold font-headline">{characters[0].name}</h3>
                 </div>
               </div>
             </CardContent>
