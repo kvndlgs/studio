@@ -35,15 +35,21 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const characters = [
-  { id: "peter", name: "Peter Griffin", image: "https://placehold.co/150x150.png", hint: "cartoon dad", voiceId: "en-US-Wavenet-D" },
-  { id: "shrek", name: "Shrek", image: "https://placehold.co/150x150.png", hint: "green ogre", voiceId: "en-US-Wavenet-B" },
+  { id: "peter", name: "Peter Griffin", image: "/img/peter.png", hint: "You are Peter Griffin from Family Guy", voiceId: "en-US-Wavenet-D" },
+  { id: "shrek", name: "Shrek", image: "https://placehold.co/150x150.png", hint: "You are Shrek", voiceId: "en-US-Wavenet-B" },
+  { id: "batman", name: "Batman 66'", image: "/img/batman.png", hint: "You are batman from 1966", voiceId: "en-US-Wavenet-B" },
+  { id: "bender", name: "Bender", image: "/img/bender.png", hint: "You are bender from Futurama", voiceId: "en-US-Wavenet-A"},
+  { id: "realisticfishhead", name: "Realistic Fish Head", image: "/img/realisticfishhead.png", hint: "You are Realistic Fish Head, news anchor from Bikini Bottom.", voiceId: "en-US-Wavenet-A"},
+  { id: "shaggy", name: "Shaggy", image: "/img/shaggy.png", hint: "You are Shaggy from Scooby Doo.", voiceId: "en-US-Wavenet-A"},
+
 ];
 
 const beats = [
-    { id: 1, name: '90s Boom Bap', bpm: 92, image: 'https://placehold.co/200x200.png', hint: 'old school radio', audioSrc: '/audio/90s-boom-bap.mp3' },
-    { id: 2, name: 'Lo-Fi Chill', bpm: 85, image: 'https://placehold.co/200x200.png', hint: 'study anime', audioSrc: '/audio/lo-fi-chill.mp3' },
-    { id: 3, name: 'Trap Banger', bpm: 140, image: 'https://placehold.co/200x200.png', hint: 'sound system', audioSrc: '/audio/trap-banger.mp3' },
-    { id: 4, name: 'West Coast Vibe', bpm: 95, image: 'https://placehold.co/200x200.png', hint: 'convertible sunset', audioSrc: '/audio/west-coast-vibe.mp3' },
+    { id: 1, name: 'Shook Ones Pt, II', bpm: 92, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLqmLsMP3un3Ny3E0kMngdZk-Lsh4D8eBDHA&s', hint: 'Classic Rap Battle Instrumental', audioSrc: '/audio/Shook Ones, Pt II - Mobb Deep.mp3' },
+    { id: 2, name: 'Who Shot Ya', bpm: 90, image: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/8a/Biggie-_Who_Shot_Ya.jpg/250px-Biggie-_Who_Shot_Ya.jpg', hint: 'study anime', audioSrc: '/audio/Notorious B.I.G - Who Shot Ya.mp3' },
+    { id: 3, name: 'Hit Em Up', bpm: 95, image: 'https://upload.wikimedia.org/wikipedia/en/thumb/3/3e/2pac_-_Hit_%27Em_Up_promo.jpg/250px-2pac_-_Hit_%27Em_Up_promo.jpg', hint: 'sound system', audioSrc: '/audio/2Pac - Hit Em Up.mp3' },
+    { id: 4, name: 'Not Like Us', bpm: 102, image: 'https://upload.wikimedia.org/wikipedia/en/thumb/6/61/Kendrick_Lamar_-_Not_Like_Us.png/250px-Kendrick_Lamar_-_Not_Like_Us.png', hint: 'Classic Rap Battle Instrumental', audioSrc: '/audio/Kendrick Lamar - Not Like Us.mp3' },
+    { id: 5, name: 'Family Matters', bpm: 82, image: 'https://upload.wikimedia.org/wikipedia/en/thumb/f/f8/Drake_-_Family_Matters.jpg/250px-Drake_-_Family_Matters.jpg', hint: 'Classic Rap Battle Instrumental', audioSrc: '/audio/Drake - Family Matters'},
 ];
 
 export function RapBattle() {
