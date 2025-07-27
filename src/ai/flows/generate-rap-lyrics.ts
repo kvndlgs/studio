@@ -15,7 +15,7 @@ import {z} from 'genkit';
 const GenerateRapLyricsInputSchema = z.object({
   character1: z.string().describe('The name of the first character.'),
   character2: z.string().describe('The name of the second character.'),
-  topic: z.string().describe('The topic of the rap battle.'),
+  topic: z.string().describe(`The topic of the rap battle.`),
   numVerses: z.number().describe('The number of verses to generate for each character.'),
 });
 export type GenerateRapLyricsInput = z.infer<typeof GenerateRapLyricsInputSchema>;
@@ -34,7 +34,7 @@ const prompt = ai.definePrompt({
   name: 'generateRapLyricsPrompt',
   input: {schema: GenerateRapLyricsInputSchema},
   output: {schema: GenerateRapLyricsOutputSchema},
-  prompt: `You are a rap lyric generator. You will generate rap lyrics for two characters based on a given topic.
+  prompt: `You are a rap lyric generator. You will generate rap lyrics for two characters based on a given topic, be mean and funny.
 
 Character 1: {{{character1}}}
 Character 2: {{{character2}}}
@@ -42,7 +42,7 @@ Topic: {{{topic}}}
 Number of verses per character: {{{numVerses}}}
 
 Generate rap lyrics for each character, making sure the lyrics are relevant to the topic and appropriate for each character.
-Format the lyrics as follows:
+Format the lyrics as follows but do not read anything that is between '[]'. mention funny and mean stuff about your opponents life and respond to previous vers when possible. :
 
 Character 1:
 [Verse 1]

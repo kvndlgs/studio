@@ -34,22 +34,22 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const characters = [
-  { id: "peter", name: "Peter Griffin", image: "/img/peter.png", hint: "You are Peter Griffin from Family Guy", voiceId: "fenrir" }, // Changed voiceId
-  { id: "shrek", name: "Shrek", image: "/img/shrek.png", hint: "You are Shrek", voiceId: "puck" }, // Changed voiceId
-  { id: "batman", name: "Batman 66'", image: "/img/batman.png", hint: "You are batman from 1966", voiceId: "charon" }, // Changed voiceId
-  { id: "bender", name: "Bender", image: "/img/bender.png", hint: "You are bender from Futurama", voiceId: "zephyr"}, // Changed voiceId
-  { id: "realisticfishhead", name: "Realistic Fish Head", image: "/img/realisticfishhead.png", hint: "You are Realistic Fish Head, news anchor from Bikini Bottom.", voiceId: "vindemiatrix"}, // Changed voiceId
-  { id: "shaggy", name: "Shaggy", image: "/img/shaggy.png", hint: "You are Shaggy from Scooby Doo.", voiceId: "umbriel"}, // Changed voiceId
+export const characters = [
+  { id: 1, name: "Peter Griffin", image: "/img/peter.png", hint: "You are Peter Griffin from Family Guy", voiceId: "fenrir" }, // Changed voiceId
+  { id: 2, name: "Shrek", image: "/img/shrek.png", hint: "You are Shrek", voiceId: "puck" }, // Changed voiceId
+  { id: 3, name: "Batman 66'", image: "/img/batman.png", hint: "You are batman from 1966", voiceId: "charon" }, // Changed voiceId
+  { id: 4, name: "Bender", image: "/img/bender.png", hint: "You are bender from Futurama", voiceId: "zephyr"}, // Changed voiceId
+  { id: 5, name: "Realistic Fish Head", image: "/img/realisticfishhead.png", hint: "You are Realistic Fish Head, news anchor from Bikini Bottom.", voiceId: "vindemiatrix"}, // Changed voiceId
+  { id: 6, name: "Shaggy", image: "/img/shaggy.png", hint: "You are Shaggy from Scooby Doo.", voiceId: "umbriel"}, // Changed voiceId
 ];
 
 
 const beats = [
-    { id: 1, name: 'Shook Ones Pt, II', bpm: 92, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLqmLsMP3un3Ny3E0kMngdZk-Lsh4D8eBDHA&s', hint: 'Classic Rap Battle Instrumental', audioSrc: '/audio/shookones.mp3' },
-    { id: 2, name: 'Who Shot Ya', bpm: 90, image: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/8a/Biggie-_Who_Shot_Ya.jpg/250px-Biggie-_Who_Shot_Ya.jpg', hint: 'study anime', audioSrc: '/audio/whoshotya.mp3' },
-    { id: 3, name: 'Hit Em Up', bpm: 95, image: 'https://upload.wikimedia.org/wikipedia/en/thumb/3/3e/2pac_-_Hit_%27Em_Up_promo.jpg/250px-2pac_-_Hit_%27Em_Up_promo.jpg', hint: 'sound system', audioSrc: '/audio/hitemup.mp3' },
-    { id: 4, name: 'Not Like Us', bpm: 102, image: 'https://upload.wikimedia.org/wikipedia/en/thumb/6/61/Kendrick_Lamar_-_Not_Like_Us.png/250px-Kendrick_Lamar_-_Not_Like_Us.png', hint: 'Classic Rap Battle Instrumental', audioSrc: '/audio/notlikeus.mp3' },
-    { id: 5, name: 'Family Matters', bpm: 82, image: 'https://upload.wikimedia.org/wikipedia/en/thumb/f/f8/Drake_-_Family_Matters.jpg/250px-Drake_-_Family_Matters.jpg', hint: 'Classic Rap Battle Instrumental', audioSrc: '/audio/familymatters.mp3'},
+    { id: 1, name: 'Shook Ones Pt, II', bpm: 92, image: '/img/shookones.png', hint: 'Legendary Battle Instrumental From Mobb', audioSrc: '/audio/shookones.mp3' },
+    { id: 2, name: 'Who Shot Ya', bpm: 90, image: '/img/whoshotya.png', hint: 'Biggie Vs. 2Pac', audioSrc: '/audio/whoshotya.mp3' },
+    { id: 3, name: 'Hit Em Up', bpm: 95, image: '/img/hitemup.png', hint: '2Pac Vs. Biggie', audioSrc: '/audio/hitemup.mp3' },
+    { id: 4, name: 'Not Like Us', bpm: 102, image: '/img/notlikeus.png', hint: 'Kendrick Lamar Vs. Drake', audioSrc: '/audio/notlikeus.mp3' },
+    { id: 5, name: 'Family Matters', bpm: 82, image: '/img/familymatters.png', hint: 'Drake Vs. Kendrick Lamar', audioSrc: '/audio/familymatters.mp3'},
 ];
 
 export function RapBattle() {
@@ -62,7 +62,6 @@ export function RapBattle() {
   const [isBeatPlaying, setIsBeatPlaying] = useState(false);
   const [isVocalsPlaying, setIsVocalsPlaying] = useState(false);
   const [audioError, setAudioError] = useState(false);
-  
   const beatAudioRef = useRef<HTMLAudioElement | null>(null);
   const vocalsAudioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
@@ -195,7 +194,7 @@ export function RapBattle() {
         <div className="text-center mb-10">
           <h2 className="text-4xl font-bold font-headline tracking-tighter sm:text-5xl md:text-6xl">The Battle is On!</h2>
           <p className="mt-4 text-muted-foreground md:text-xl">
-            The epic clash between {characters[0].name} and {characters[1].name}.
+            {characters[0].name} Vs. {characters[1].name}.
           </p>
         </div>
 
@@ -276,7 +275,7 @@ export function RapBattle() {
         
         <div className="mt-12 text-center">
             <Button onClick={resetBattle} size="lg">
-                <Wand2 className="mr-2 h-5 w-5"/> Create Another Battle
+                <Wand2 className="mr-2 h-5 w-5"/> New Battle
             </Button>
         </div>
       </section>
@@ -287,24 +286,22 @@ export function RapBattle() {
     <section className="container max-w-5xl py-12">
       <div className="text-center mb-10">
         <h2 className="text-4xl font-bold font-headline tracking-tighter sm:text-5xl md:text-6xl">
-          Create Your Battle
+           Set The Stage
         </h2>
         <p className="mt-4 text-muted-foreground md:text-xl">
-          Choose your fighters, pick a beat, and let the AI lyrical warfare
-          begin.
+          Choose 2 opponents, pick a beat, and let the sucker punches fly
         </p>
       </div>
-
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleGenerate)} className="space-y-8">
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-2xl font-headline">
                 <MicVocal className="h-8 w-8 text-primary" />
-                Step 1: The Contenders
+                 The Contenders
               </CardTitle>
               <CardDescription>
-                Two titans enter the ring. Only one will leave a legend.
+                Two MC's enter the ring. Only one will leave a legend.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -332,39 +329,6 @@ export function RapBattle() {
                   />
                   <h3 className="text-xl font-bold font-headline">{characters[1].name}</h3>
                 </div>
-                <div className="flex flex-col items-center gap-2">
-                  <Image
-                    src={characters[2].image}
-                    alt={characters[2].name}
-                    width={150}
-                    height={150}
-                    className="rounded-full border-4 border-primary shadow-lg"
-                    data-ai-hint={characters[2].hint}
-                  />
-                  <h3 className="text-xl font-bold font-headline">{characters[0].name}</h3>
-                </div>
-                <div className="flex flex-col items-center gap-2">
-                  <Image
-                    src={characters[3].image}
-                    alt={characters[3].name}
-                    width={150}
-                    height={150}
-                    className="rounded-full border-4 border-primary shadow-lg"
-                    data-ai-hint={characters[3].hint}
-                  />
-                  <h3 className="text-xl font-bold font-headline">{characters[0].name}</h3>
-                </div>
-                <div className="flex flex-col items-center gap-2">
-                  <Image
-                    src={characters[4].image}
-                    alt={characters[4].name}
-                    width={150}
-                    height={150}
-                    className="rounded-full border-4 border-primary shadow-lg"
-                    data-ai-hint={characters[4].hint}
-                  />
-                  <h3 className="text-xl font-bold font-headline">{characters[0].name}</h3>
-                </div>
               </div>
             </CardContent>
           </Card>
@@ -373,10 +337,10 @@ export function RapBattle() {
              <CardHeader>
               <CardTitle className="flex items-center gap-3 text-2xl font-headline">
                 <Music className="h-8 w-8 text-primary" />
-                Step 2: The Beat
+                The Beat
               </CardTitle>
               <CardDescription>
-                Select the instrumental that will set the stage for this epic showdown.
+                Select an instrumental.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -387,7 +351,7 @@ export function RapBattle() {
                             selectedBeat.id === beat.id ? 'ring-2 ring-primary shadow-primary/40 shadow-xl' : 'ring-0 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-1'
                         )}>
                             <CardHeader className="p-0 relative">
-                                <Image src={beat.image} alt={beat.name} width={200} height={120} className="rounded-t-lg aspect-[3/2] object-cover" data-ai-hint={beat.hint}/>
+                                <Image src={beat.image} alt={beat.name} width={120} height={120} className="rounded-md p-1 aspect-[3/2] self-center object-cover" data-ai-hint={beat.hint}/>
                                 <div className={cn(
                                   "absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center",
                                   selectedBeat.id === beat.id && "bg-black/60"
@@ -397,7 +361,6 @@ export function RapBattle() {
                             </CardHeader>
                             <CardContent className="p-3 text-center">
                                 <p className="font-semibold font-headline">{beat.name}</p>
-                                <p className="text-sm text-muted-foreground">{beat.bpm} BPM</p>
                             </CardContent>
                         </Card>
                     ))}
@@ -410,9 +373,9 @@ export function RapBattle() {
             <CardHeader>
                <CardTitle className="flex items-center gap-3 text-2xl font-headline">
                 <Wand2 className="h-8 w-8 text-primary" />
-                Step 3: The Topic
+                The Topic
               </CardTitle>
-              <CardDescription>What will they be battling about? Get creative!</CardDescription>
+              <CardDescription>What's the beef about?</CardDescription>
             </CardHeader>
             <CardContent>
                 <FormField
@@ -420,10 +383,10 @@ export function RapBattle() {
                 name="topic"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel className="sr-only">Battle Topic</FormLabel>
+                    <FormLabel className="sr-only">Topic</FormLabel>
                     <FormControl>
                         <Textarea
-                        placeholder="e.g., The last piece of pizza, who is the real king, the meaning of life..."
+                        placeholder="e.g., The aerodynamic of a cow, Grower or shower?, the meaning of life..."
                         className="min-h-[100px] text-base"
                         {...field}
                         />
@@ -434,13 +397,13 @@ export function RapBattle() {
                 />
             </CardContent>
             <CardFooter>
-                 <Button type="submit" disabled={isLoading} size="lg" className="w-full text-lg font-headline tracking-wide">
+                 <Button type="submit" disabled={isLoading} size="lg" className="w-full text-white text-lg font-bold tracking-wide">
                     {isLoading ? (
                     <Loader2 className="mr-2 h-6 w-6 animate-spin" />
                     ) : (
-                    <MicVocal className="mr-2 h-6 w-6" />
+                      ''
                     )}
-                    {isLoading ? loadingStatus : "Start the Rumble!"}
+                    {isLoading ? loadingStatus : "START!"}
                 </Button>
             </CardFooter>
           </Card>
