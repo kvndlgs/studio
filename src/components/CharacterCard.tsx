@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar'
+import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
+import { characters } from './RapBattle';
 import { Character } from '../types';
 
 interface CharacterCardProps {
@@ -16,15 +17,12 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
     onClick }) => {
     return (
         <div className={`border-2 border-transparent ${isSelected ? 'border-orange' : ''}`}>
-                <div className="flex flex-col items-around justify-center">
-                  <Avatar>
-                    <AvatarImage src={character.image} />
-                    <AvatarFallback>
-                      {character.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                    <h3> { character.name } </h3>
-                </div>
+          <h2> { character.name } </h2>
+          <img src={character.image} alt={character.name} />
+          <p> { character.hint } </p>
+          <button onClick={onClick} disabled={disabled}>
+            {isSelected ? 'Selected' : 'Select'}
+          </button>
         </div>
     )
 }

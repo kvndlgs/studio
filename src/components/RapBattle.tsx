@@ -35,14 +35,14 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export const characters = [
-  { id: 1, name: "Peter Griffin", image: "/img/peter_avatar.png", h: "638px", w: "638px", faceoff: "/img/peter_faceoff.png", hint: "You are Peter Griffin from Family Guy", voiceId: "fenrir" }, // Changed voiceId
-  { id: 2, name: "Shrek", image: "/img/shrek_avatar.png", h: "678px", w: "471px", faceoff: "/img/shrek_faceoff.png", hint: "You are Shrek", voiceId: "puck" }, // Changed voiceId
-  { id: 3, name: "Batman 66'", image: "/img/batman_avatar.png", h: "617px", w: "447px", faceoff: "/img/batman_faceoff.png", hint: "You are batman from 1966", voiceId: "charon" }, // Changed voiceId
-  { id: 4, name: "Bender", image: "/img/bender_avatar.png", h: "600px", w: "391px", faceoff: "/img/bender_faceoff.png", hint: "You are bender from Futurama", voiceId: "zephyr"}, // Changed voiceId
+  { id: 1, name: "Peter Griffin", image: "/img/peter_avatar.png", faceoff: "/img/peter_faceoff.png", hint: "You are Peter Griffin from Family Guy", voiceId: "fenrir" }, // Changed voiceId
+  { id: 2, name: "Shrek", image: "/img/shrek_avatar.png",  faceoff: "/img/shrek_faceoff.png", hint: "You are Shrek", voiceId: "puck" }, // Changed voiceId
+  { id: 3, name: "Batman 66'", image: "/img/batman_avatar.png", faceoff: "/img/batman_faceoff.png", hint: "You are batman from 1966", voiceId: "charon" }, // Changed voiceId
+  { id: 4, name: "Bender", image: "/img/bender_avatar.png", faceoff: "/img/bender_faceoff.png", hint: "You are bender from Futurama", voiceId: "zephyr"}, // Changed voiceId
   { id: 5, name: "Realistic Fish Head", image: "/img/realisticfishhead.png", hint: "You are Realistic Fish Head, news anchor from Bikini Bottom.", voiceId: "vindemiatrix"}, // Changed voiceId
-  { id: 6, name: "Shaggy", image: "/img/shaggy_avatar.png", h: "290px", w:"556px", faceoff: "/img/shaggy_faceoff.png", hint: "You are Shaggy from Scooby Doo.", voiceId: "umbriel"}, // Changed voiceId
-  { id: 7, name: "Hagrid PS2", image: "/img/hagrid_avatar.png", h: "578px", w: "578px", faceoff: "/img/hagrid_faceoff.png", hint: "Hagrid from Harry Potter, but from the ps2 game version.", voiceId: "luna" },
-  { id: 8, name: "Parapa The Rapper", image: "/img/parapa_avatar.png", h: "363px", w: "263px", faceoff: "/parapa_faceoff.png", hint: "Parapa The Rapper", voiceId: "umbriel" },
+  { id: 6, name: "Shaggy", image: "/img/shaggy_avatar.png", faceoff: "/img/shaggy_faceoff.png", hint: "You are Shaggy from Scooby Doo.", voiceId: "umbriel"}, // Changed voiceId
+  { id: 7, name: "Hagrid PS2", image: "/img/hagrid_avatar.png", faceoff: "/img/hagrid_faceoff.png", hint: "Hagrid from Harry Potter, but from the ps2 game version.", voiceId: "luna" },
+  { id: 8, name: "Parapa The Rapper", image: "/img/parapa_avatar.png", faceoff: "/parapa_faceoff.png", hint: "Parapa The Rapper", voiceId: "umbriel" },
 ];
 
 
@@ -60,6 +60,9 @@ export function RapBattle() {
   const [lyrics, setLyrics] = useState<GenerateRapLyricsOutput | null>(null);
   const [ttsAudio, setTtsAudio] = useState<GenerateTtsAudioOutput | null>(null);
   const [selectedBeat, setSelectedBeat] = useState(beats[0]);
+  const [isSelected, setIsSelected] = useState(false);
+  const [selectedCharacter, setSelectedCharacter] = useState(characters[0]);
+  const [selectedCharacter1, setSelectedCharacter1] = useState(characters[1]);
   const [isResultsVisible, setIsResultsVisible] = useState(false);
   const [isBeatPlaying, setIsBeatPlaying] = useState(false);
   const [isVocalsPlaying, setIsVocalsPlaying] = useState(false);
@@ -147,8 +150,8 @@ export function RapBattle() {
     try {
       setLoadingStatus("Generating lyrical fire...");
       const lyricsResult = await generateRapLyrics({
-        character1: characters[0].name,
-        character2: characters[1].name,
+        character1: selectedCharacter.name,
+        character2: selectedCharacter1.name,
         topic: data.topic,
         numVerses: 2,
       });
@@ -157,9 +160,9 @@ export function RapBattle() {
       setLoadingStatus("Recording the vocal track...");
       const ttsResult = await generateTtsAudio({
         lyricsCharacter1: lyricsResult.lyricsCharacter1,
-        character1Voice: characters[0].voiceId,
+        character1Voice: selectedCharacter.voiceId,
         lyricsCharacter2: lyricsResult.lyricsCharacter2,
-        character2Voice: characters[1].voiceId,
+        character2Voice: selectedCharacter1.voiceId,
       });
       setTtsAudio(ttsResult);
 
@@ -196,7 +199,7 @@ export function RapBattle() {
         <div className="text-center mb-10">
           <h2 className="text-4xl font-bold font-headline tracking-tighter sm:text-5xl md:text-6xl">The Battle is On!</h2>
           <p className="mt-4 text-muted-foreground md:text-xl">
-            {characters[0].name} Vs. {characters[1].name}.
+            {selectedCharacter.name} Vs. {selectedCharacter1.name}.
           </p>
         </div>
 
@@ -249,13 +252,14 @@ export function RapBattle() {
         </Card>
 
         <div className="grid md:grid-cols-2 gap-8">
+
             <Card className="transform transition-transform duration-500 hover:scale-105 hover:shadow-2xl">
                 <CardHeader className="flex-row items-center gap-4">
                   <div>
-                    <img src={characters[0].faceoff} alt={characters[0].name} width="auto" height={638} />
+                    <img src={selectedCharacter.faceoff} alt={selectedCharacter.name} />
                   </div>
 
-                    <CardTitle className="text-2xl font-headline">{characters[0].name}</CardTitle>
+                    <CardTitle className="text-2xl font-headline">{selectedCharacter.name}</CardTitle>
                 </CardHeader>
                 <CardContent className="prose prose-sm dark:prose-invert prose-p:text-foreground/80 whitespace-pre-wrap font-body text-base">
                     {lyrics.lyricsCharacter1}
@@ -264,9 +268,9 @@ export function RapBattle() {
             <Card className="transform transition-transform duration-500 hover:scale-105 hover:shadow-2xl">
                 <CardHeader className="flex-row items-center gap-4">
                   <div>
-                    <img src={characters[1].faceoff} alt={characters[1].name} width="auto" height={638} />
+                    <img src={selectedCharacter1.faceoff} alt={selectedCharacter1.name} />
                   </div>
-                 <CardTitle className="text-2xl font-headline">{characters[1].name}</CardTitle>
+                 <CardTitle className="text-2xl font-headline">{selectedCharacter1.name}</CardTitle>
                 </CardHeader>
                 <CardContent className="prose prose-sm dark:prose-invert prose-p:text-foreground/80 whitespace-pre-wrap font-body text-base">
                     {lyrics.lyricsCharacter2}
@@ -287,7 +291,7 @@ export function RapBattle() {
     <section className="container max-w-5xl py-12">
       <div className="text-center mb-10">
         <h2 className="text-4xl font-bold font-headline tracking-tighter sm:text-5xl md:text-6xl">
-           Set The Stage
+          SET MATCH UP
         </h2>
         <p className="mt-4 text-muted-foreground md:text-xl">
           Choose 2 opponents, pick a beat, and let the sucker punches fly
@@ -302,35 +306,61 @@ export function RapBattle() {
                  The Contenders
               </CardTitle>
               <CardDescription>
-                Two MC's enter the ring. Only one will leave a legend.
+                Two enter the ring. Only one will leave a legend.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-8 p-4">
                 <div className="flex flex-col items-center justify-end">
-                  <Image
-                    src={characters[0].faceoff}
-                    alt={characters[0].name}
-                    width="auto"
-                    height={638}
-                    data-ai-hint={characters[0].hint}
+                  <img
+                    src={selectedCharacter.faceoff}
+                    alt={selectedCharacter.name}
+                    data-ai-hint={selectedCharacter.hint}
                   />
-                  <h3 className="text-xl font-bold font-headline">{characters[0].name}</h3>
+                  <h3 className="text-xl font-bold font-headline">{selectedCharacter.name}</h3>
                 </div>
                 <div className="text-4xl font-bold text-muted-foreground font-headline mx-4">VS</div>
                 <div className="flex flex-col items-center justify-end">
-                  <Image
-                    src={characters[1].faceoff}
-                    alt={characters[1].name}
-                    width="auto"
-                    height={638}
-                    data-ai-hint={characters[1].hint}
+                  <img
+                    src={selectedCharacter1.faceoff}
+                    alt={selectedCharacter1.name}
+                    data-ai-hint={selectedCharacter1.hint}
                   />
-                  <h3 className="text-xl font-bold font-headline">{characters[1].name}</h3>
+                  <h3 className="text-xl font-bold font-headline">{selectedCharacter1.name}</h3>
                 </div>
               </div>
             </CardContent>
+        
           </Card>
+
+          <div className="w-screen container flex flex-col items-between gap-4">
+            <div className="w-3/4 h-auto flex items-center justify-around cursor-pointer">
+            {characters.map((character) => (
+              <div key={character.id} onClick={() => setSelectedCharacter(character)}
+              className="w-full h-auto flex items-center justify-around ">
+              
+                  <Avatar>
+                    <AvatarImage src={character.image} alt={character.name} className="rounded-full w-18 h-18 object-cover" /> 
+       
+                  </Avatar>
+           
+                </div>
+            ))}
+        
+            </div>
+            <div className="w-3/4 h-auto flex items-center justify-around cursor-pointer">
+            {characters.map((character) => (
+              <div key={character.id} onClick={() => setSelectedCharacter1(character)}>
+        
+                  <Avatar>
+                    <AvatarImage src={character.image} alt={character.name} className='rounded-full w-18 h-18 object-cover' /> 
+     
+                  </Avatar>
+                
+              </div>
+            ))}
+            </div>
+            </div>
 
           <Card className="shadow-lg">
              <CardHeader>
