@@ -35,12 +35,14 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export const characters = [
-  { id: 1, name: "Peter Griffin", image: "/img/peter.png", hint: "You are Peter Griffin from Family Guy", voiceId: "fenrir" }, // Changed voiceId
-  { id: 2, name: "Shrek", image: "/img/shrek.png", hint: "You are Shrek", voiceId: "puck" }, // Changed voiceId
-  { id: 3, name: "Batman 66'", image: "/img/batman.png", hint: "You are batman from 1966", voiceId: "charon" }, // Changed voiceId
-  { id: 4, name: "Bender", image: "/img/bender.png", hint: "You are bender from Futurama", voiceId: "zephyr"}, // Changed voiceId
+  { id: 1, name: "Peter Griffin", image: "/img/peter_avatar.png", h: "638px", w: "638px", faceoff: "/img/peter_faceoff.png", hint: "You are Peter Griffin from Family Guy", voiceId: "fenrir" }, // Changed voiceId
+  { id: 2, name: "Shrek", image: "/img/shrek_avatar.png", h: "678px", w: "471px", faceoff: "/img/shrek_faceoff.png", hint: "You are Shrek", voiceId: "puck" }, // Changed voiceId
+  { id: 3, name: "Batman 66'", image: "/img/batman_avatar.png", h: "617px", w: "447px", faceoff: "/img/batman_faceoff.png", hint: "You are batman from 1966", voiceId: "charon" }, // Changed voiceId
+  { id: 4, name: "Bender", image: "/img/bender_avatar.png", h: "600px", w: "391px", faceoff: "/img/bender_faceoff.png", hint: "You are bender from Futurama", voiceId: "zephyr"}, // Changed voiceId
   { id: 5, name: "Realistic Fish Head", image: "/img/realisticfishhead.png", hint: "You are Realistic Fish Head, news anchor from Bikini Bottom.", voiceId: "vindemiatrix"}, // Changed voiceId
-  { id: 6, name: "Shaggy", image: "/img/shaggy.png", hint: "You are Shaggy from Scooby Doo.", voiceId: "umbriel"}, // Changed voiceId
+  { id: 6, name: "Shaggy", image: "/img/shaggy_avatar.png", h: "290px", w:"556px", faceoff: "/img/shaggy_faceoff.png", hint: "You are Shaggy from Scooby Doo.", voiceId: "umbriel"}, // Changed voiceId
+  { id: 7, name: "Hagrid PS2", image: "/img/hagrid_avatar.png", h: "578px", w: "578px", faceoff: "/img/hagrid_faceoff.png", hint: "Hagrid from Harry Potter, but from the ps2 game version.", voiceId: "luna" },
+  { id: 8, name: "Parapa The Rapper", image: "/img/parapa_avatar.png", h: "363px", w: "263px", faceoff: "/parapa_faceoff.png", hint: "Parapa The Rapper", voiceId: "umbriel" },
 ];
 
 
@@ -249,10 +251,10 @@ export function RapBattle() {
         <div className="grid md:grid-cols-2 gap-8">
             <Card className="transform transition-transform duration-500 hover:scale-105 hover:shadow-2xl">
                 <CardHeader className="flex-row items-center gap-4">
-                    <Avatar className="w-16 h-16 border-4 border-primary/50">
-                        <AvatarImage src={characters[0].image} alt={characters[0].name} data-ai-hint={characters[0].hint}/>
-                        <AvatarFallback>{characters[0].name.substring(0,2)}</AvatarFallback>
-                    </Avatar>
+                  <div>
+                    <img src={characters[0].faceoff} alt={characters[0].name} width="auto" height={638} />
+                  </div>
+
                     <CardTitle className="text-2xl font-headline">{characters[0].name}</CardTitle>
                 </CardHeader>
                 <CardContent className="prose prose-sm dark:prose-invert prose-p:text-foreground/80 whitespace-pre-wrap font-body text-base">
@@ -261,11 +263,10 @@ export function RapBattle() {
             </Card>
             <Card className="transform transition-transform duration-500 hover:scale-105 hover:shadow-2xl">
                 <CardHeader className="flex-row items-center gap-4">
-                    <Avatar className="w-16 h-16 border-4 border-primary/50">
-                        <AvatarImage src={characters[1].image} alt={characters[1].name} data-ai-hint={characters[1].hint}/>
-                        <AvatarFallback>{characters[1].name.substring(0,2)}</AvatarFallback>
-                    </Avatar>
-                    <CardTitle className="text-2xl font-headline">{characters[1].name}</CardTitle>
+                  <div>
+                    <img src={characters[1].faceoff} alt={characters[1].name} width="auto" height={638} />
+                  </div>
+                 <CardTitle className="text-2xl font-headline">{characters[1].name}</CardTitle>
                 </CardHeader>
                 <CardContent className="prose prose-sm dark:prose-invert prose-p:text-foreground/80 whitespace-pre-wrap font-body text-base">
                     {lyrics.lyricsCharacter2}
@@ -306,25 +307,23 @@ export function RapBattle() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-8 p-4">
-                <div className="flex flex-col items-center gap-2">
+                <div className="flex flex-col items-center justify-end">
                   <Image
-                    src={characters[0].image}
+                    src={characters[0].faceoff}
                     alt={characters[0].name}
-                    width={150}
-                    height={150}
-                    className="rounded-full border-4 border-primary shadow-lg"
+                    width="auto"
+                    height={638}
                     data-ai-hint={characters[0].hint}
                   />
                   <h3 className="text-xl font-bold font-headline">{characters[0].name}</h3>
                 </div>
                 <div className="text-4xl font-bold text-muted-foreground font-headline mx-4">VS</div>
-                <div className="flex flex-col items-center gap-2">
+                <div className="flex flex-col items-center justify-end">
                   <Image
-                    src={characters[1].image}
+                    src={characters[1].faceoff}
                     alt={characters[1].name}
-                    width={150}
-                    height={150}
-                    className="rounded-full border-4 border-primary shadow-lg"
+                    width="auto"
+                    height={638}
                     data-ai-hint={characters[1].hint}
                   />
                   <h3 className="text-xl font-bold font-headline">{characters[1].name}</h3>

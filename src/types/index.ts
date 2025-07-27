@@ -2,6 +2,7 @@ export interface Character {
     id: number;
     name: string;
     image: string;
+    faceoff?: string;
     hint: string;
     voiceId: string;
 }
