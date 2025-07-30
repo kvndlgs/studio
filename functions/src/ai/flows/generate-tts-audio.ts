@@ -1,5 +1,3 @@
-'use server';
-
 /**
  * @fileOverview A Text-to-Speech (TTS) generation flow for two speakers.
  *
@@ -8,7 +6,7 @@
  * - GenerateTtsAudioOutput - The return type for the generateTtsAudio function.
  */
 
-import {ai} from '../../ai/genkit';
+import {ai} from '../genkit';
 import {z} from 'genkit';
 import wav from 'wav';
 
@@ -56,7 +54,7 @@ async function toWav(
     });
 }
 
-const generateTtsAudioFlow = ai.defineFlow(
+export const generateTtsAudioFlow = ai.defineFlow(
     {
         name: 'generateTtsAudioFlow',
         inputSchema: GenerateTtsAudioInputSchema,

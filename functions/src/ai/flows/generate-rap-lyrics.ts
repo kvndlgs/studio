@@ -1,6 +1,3 @@
-
-'use server';
-
 /**
  * @fileOverview A rap lyrics generation AI agent for two characters.
  *
@@ -9,7 +6,7 @@
  * - GenerateRapLyricsOutput - The return type for the generateRapLyrics function.
  */
 
-import {ai} from '../../ai/genkit';
+import {ai} from '../genkit';
 import {z} from 'genkit';
 
 const GenerateRapLyricsInputSchema = z.object({
@@ -20,7 +17,7 @@ const GenerateRapLyricsInputSchema = z.object({
 });
 export type GenerateRapLyricsInput = z.infer<typeof GenerateRapLyricsInputSchema>;
 
-export const GenerateRapLyricsOutputSchema = z.object({
+const GenerateRapLyricsOutputSchema = z.object({
   lyricsCharacter1: z.string().describe('The rap lyrics for the first character.'),
   lyricsCharacter2: z.string().describe('The rap lyrics for the second character.'),
 });

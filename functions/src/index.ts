@@ -1,12 +1,29 @@
+import { onCallGenkit } from 'firebase-functions/https';
+import { defineSecret } from 'firebase-functions/params';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import * as v2 from 'firebase-functions/v2';
-import { generateRapLyrics, GenerateRapLyricsInput } from './ai/flows/generate-rap-lyrics';
-import { generateTtsAudio, GenerateTtsAudioInput } from './ai/flows/generate-tts-audio';
 import { Character } from './types/index';
+import { generateRapLyricsFlow } from './ai/flows/generate-rap-lyrics';
+import { generateTtsAudioFlow } from './ai/flows/generate-tts-audio';
+
+const apiKey = defineSecret('GEMINI_API_KEY');
+
+
 
 initializeApp();
 const db = getFirestore();
+
+
+export const generateRapLyrics = onCallGenkit({
+    secrets: [apiKey],
+    }, generateRapLyricsFlow );
+
+export const generateTtsAudio = onCallGenkit({
+    secrets: [apiKey],
+}, generateTtsAudioFlow );
+
+
 
 export const createCharacter = v2.https.onCall(async(request) => {
     const characterData: Omit<Character, 'id' | 'createdAt'> = request.data;
@@ -137,48 +154,46 @@ export const seedCharacters = v2.https.onCall(async(request) => {
 
 });
 
-
-export const generateRapBattleWithAudio = v2.https.onCall(async(request) => {
-    const { character1Id, character2Id,topic, numVerses} = request.data;
-
+export const generateRapBattle = v2.https.onCall(async (request)  => {
+    const { character1Id, character2Id, topic, numVerses } = request.data;
+    
+    // Fetch characters from Firestore
     const [char1Doc, char2Doc] = await Promise.all([
-        db.collection('characters').doc(character1Id).get(),
-        db.collection('characters').doc(character2Id).get()
+      db.collection('characters').doc(character1Id).get(),
+      db.collection('characters').doc(character2Id).get()
     ]);
     
-    const character1 = { id: char1Doc.id, ...char1Doc.data() } as Character;
-    const character2 = { id: char2Doc.id, ...char2Doc.data() } as Character;
-
-    const lyricsInput: GenerateRapLyricsInput = {
-        character1: character1.name,
-        character2: character2.name,
-        topic,
-        numVerses
-    };
-
-    const lyricsResult = await generateRapLyrics(lyricsInput);
-
-    const audioInput: GenerateTtsAudioInput = {
-        lyricsCharacter1: lyricsResult.lyricsCharacter1,
-        character1Voice: character1.voiceId,
-        lyricsCharacter2: lyricsResult.lyricsCharacter2,
-        character2Voice: character2.voiceId,
-    };
-
-    const audioResult = await generateTtsAudio(audioInput);
-
-    const battleRef = await db.collection('battles').add({
-        participants: [character1Id, character2Id],
-        topic,
-        lyrics: lyricsResult,
-        audioDataUri: audioResult.audioDataUri,
-        createdAt: new Date()
+  const character1 = { id: char1Doc.id, ...char1Doc.data() } as Character;
+  const character2 = { id: char2Doc.id, ...char2Doc.data() } as Character;
+    
+    // Generate lyrics using your existing flow
+    const lyricsResult = await generateRapLyricsFlow({
+      character1: character1.name,
+      character2: character2.name,
+      topic,
+      numVerses
     });
-
+    
+    // Generate audio using your existing flow
+    const audioResult = await generateTtsAudioFlow({
+      lyricsCharacter1: lyricsResult.lyricsCharacter1,
+      character1Voice: character1.voiceId,
+      lyricsCharacter2: lyricsResult.lyricsCharacter2,
+      character2Voice: character2.voiceId
+    });
+    
+    // Save battle to Firestore
+    const battleRef = await db.collection('battles').add({
+      participants: [character1Id, character2Id],
+      topic,
+      lyrics: lyricsResult,
+      audioDataUri: audioResult.audioDataUri,
+      createdAt: new Date()
+    });
+    
     return {
-        battleId: battleRef.id,
-        lyrics:  lyricsResult,
-        audio: audioResult.audioDataUri
+      battleId: battleRef.id,
+      lyrics: lyricsResult,
+      audio: audioResult.audioDataUri
     };
-});
-
+  });
