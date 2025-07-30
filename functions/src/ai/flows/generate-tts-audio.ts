@@ -8,7 +8,7 @@
  * - GenerateTtsAudioOutput - The return type for the generateTtsAudio function.
  */
 
-import {ai} from '@/ai/genkit';
+import {ai} from '../../ai/genkit';
 import {z} from 'genkit';
 import wav from 'wav';
 
@@ -56,7 +56,7 @@ async function toWav(
     });
 }
 
-export const generateTtsAudioFlow = ai.defineFlow(
+const generateTtsAudioFlow = ai.defineFlow(
     {
         name: 'generateTtsAudioFlow',
         inputSchema: GenerateTtsAudioInputSchema,

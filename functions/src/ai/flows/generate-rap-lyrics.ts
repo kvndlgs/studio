@@ -9,7 +9,7 @@
  * - GenerateRapLyricsOutput - The return type for the generateRapLyrics function.
  */
 
-import {ai} from '@/ai/genkit';
+import {ai} from '../../ai/genkit';
 import {z} from 'genkit';
 
 const GenerateRapLyricsInputSchema = z.object({
@@ -20,7 +20,7 @@ const GenerateRapLyricsInputSchema = z.object({
 });
 export type GenerateRapLyricsInput = z.infer<typeof GenerateRapLyricsInputSchema>;
 
-const GenerateRapLyricsOutputSchema = z.object({
+export const GenerateRapLyricsOutputSchema = z.object({
   lyricsCharacter1: z.string().describe('The rap lyrics for the first character.'),
   lyricsCharacter2: z.string().describe('The rap lyrics for the second character.'),
 });

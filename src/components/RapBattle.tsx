@@ -24,6 +24,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Progress } from "./ui/progress";
+import { characters } from "@/data/characters";
+import { CharacterCard } from "./CharacterCard";
 
 const formSchema = z.object({
   topic: z
@@ -33,18 +35,6 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
-
-export const characters = [
-  { id: 1, name: "Peter Griffin", image: "/img/peter_avatar.png", faceoff: "/img/peter_faceoff.png", hint: "You are Peter Griffin from Family Guy", voiceId: "fenrir" }, // Changed voiceId
-  { id: 2, name: "Shrek", image: "/img/shrek_avatar.png",  faceoff: "/img/shrek_faceoff.png", hint: "You are Shrek", voiceId: "puck" }, // Changed voiceId
-  { id: 3, name: "Batman 66'", image: "/img/batman_avatar.png", faceoff: "/img/batman_faceoff.png", hint: "You are batman from 1966", voiceId: "charon" }, // Changed voiceId
-  { id: 4, name: "Bender", image: "/img/bender_avatar.png", faceoff: "/img/bender_faceoff.png", hint: "You are bender from Futurama", voiceId: "zephyr"}, // Changed voiceId
-  { id: 5, name: "Realistic Fish Head", image: "/img/realisticfishhead.png", hint: "You are Realistic Fish Head, news anchor from Bikini Bottom.", voiceId: "vindemiatrix"}, // Changed voiceId
-  { id: 6, name: "Shaggy", image: "/img/shaggy_avatar.png", faceoff: "/img/shaggy_faceoff.png", hint: "You are Shaggy from Scooby Doo.", voiceId: "umbriel"}, // Changed voiceId
-  { id: 7, name: "Hagrid PS2", image: "/img/hagrid_avatar.png", faceoff: "/img/hagrid_faceoff.png", hint: "Hagrid from Harry Potter, but from the ps2 game version.", voiceId: "luna" },
-  { id: 8, name: "Parapa The Rapper", image: "/img/parapa_avatar.png", faceoff: "/parapa_faceoff.png", hint: "Parapa The Rapper", voiceId: "umbriel" },
-];
-
 
 const beats = [
     { id: 1, name: 'Shook Ones Pt, II', bpm: 92, image: '/img/shookones.png', hint: 'Legendary Battle Instrumental From Mobb', audioSrc: '/audio/shookones.mp3' },
@@ -60,7 +50,6 @@ export function RapBattle() {
   const [lyrics, setLyrics] = useState<GenerateRapLyricsOutput | null>(null);
   const [ttsAudio, setTtsAudio] = useState<GenerateTtsAudioOutput | null>(null);
   const [selectedBeat, setSelectedBeat] = useState(beats[0]);
-  const [isSelected, setIsSelected] = useState(false);
   const [selectedCharacter, setSelectedCharacter] = useState(characters[0]);
   const [selectedCharacter1, setSelectedCharacter1] = useState(characters[1]);
   const [isResultsVisible, setIsResultsVisible] = useState(false);
@@ -316,6 +305,7 @@ export function RapBattle() {
                     src={selectedCharacter.faceoff}
                     alt={selectedCharacter.name}
                     data-ai-hint={selectedCharacter.hint}
+                    className="w-3/4"
                   />
                   <h3 className="text-xl font-bold font-headline">{selectedCharacter.name}</h3>
                 </div>
@@ -325,7 +315,8 @@ export function RapBattle() {
                     src={selectedCharacter1.faceoff}
                     alt={selectedCharacter1.name}
                     data-ai-hint={selectedCharacter1.hint}
-                  />
+                    className="w-3/4"
+                 />
                   <h3 className="text-xl font-bold font-headline">{selectedCharacter1.name}</h3>
                 </div>
               </div>
@@ -333,31 +324,31 @@ export function RapBattle() {
         
           </Card>
 
-          <div className="w-screen container flex flex-col items-between gap-4">
-            <div className="w-3/4 h-auto flex items-center justify-around cursor-pointer">
+          <div className="max-w-full container flex flex-col items-between gap-4">
+            <h4 className="text-bold"> Pick a character </h4>
+            <div className="w-full h-auto flex md:flex-wrap items-center justify-around gap-2 cursor-pointer">
             {characters.map((character) => (
-              <div key={character.id} onClick={() => setSelectedCharacter(character)}
-              className="w-full h-auto flex items-center justify-around ">
-              
-                  <Avatar>
-                    <AvatarImage src={character.image} alt={character.name} className="rounded-full w-18 h-18 object-cover" /> 
-       
-                  </Avatar>
-           
-                </div>
+              <CharacterCard 
+                key={character.id} 
+                character={character} 
+                isSelected={selectedCharacter.id === character.id}
+                disabled={isLoading}
+                onClick={() => setSelectedCharacter(character)}
+              />
             ))}
         
             </div>
-            <div className="w-3/4 h-auto flex items-center justify-around cursor-pointer">
+            <div className="w-full h-auto text-center"><h3>VS.</h3></div>
+            <h4 className="font-bold"> Pick an opponent </h4>
+            <div className="w-full h-auto flex items-center justify-around gap-2 cursor-pointer">
             {characters.map((character) => (
-              <div key={character.id} onClick={() => setSelectedCharacter1(character)}>
-        
-                  <Avatar>
-                    <AvatarImage src={character.image} alt={character.name} className='rounded-full w-18 h-18 object-cover' /> 
-     
-                  </Avatar>
-                
-              </div>
+               <CharacterCard 
+                key={character.id} 
+                character={character} 
+                isSelected={selectedCharacter1.id === character.id}
+                disabled={isLoading}
+                onClick={() => setSelectedCharacter1(character)}
+              />
             ))}
             </div>
             </div>
