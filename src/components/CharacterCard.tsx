@@ -21,7 +21,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
                 "w-full h-auto flex items-center gap-2 justify-around cursor-pointer",
                 "transition-all duration-300",
                 isSelected ? "opacity-100 scale-105" : "opacity-70 grayscale hover:opacity-100 hover:grayscale-0",
-                disabled && "pointer-events-none opacity-50"
+                disabled && "pointer-events-none opacity-50 grayscale"
             )}
             onClick={disabled ? undefined : onClick}
         >

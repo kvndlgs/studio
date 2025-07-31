@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Progress } from "./ui/progress";
 import { CharacterCard } from "./CharacterCard";
+import { Skeleton } from "./ui/skeleton";
 
 const formSchema = z.object({
   topic: z
@@ -105,8 +106,9 @@ export function RapBattle() {
   useEffect(() => {
     const fetchCharacters = async () => {
       try {
+        setCharactersLoading(true);
         const result = await getCharacters({});
-        const fetchedCharacters = result.data;
+        const fetchedCharacters = result.data as Character[];
         setCharacters(fetchedCharacters);
         
         // Set default selected characters once characters are loaded
@@ -116,7 +118,6 @@ export function RapBattle() {
         }
       } catch (error) {
         console.error('Failed to fetch characters:', error);
-        console.log('Could not fetch characters from the database.', error);
         toast({
           variant: "destructive",
           title: "Failed to load characters",
@@ -249,8 +250,12 @@ export function RapBattle() {
     setLyrics(null);
     setTtsAudio(null);
     form.reset();
-    beatAudioRef.current?.pause();
-    vocalsAudioRef.current?.pause();
+    if(beatAudioRef.current) {
+        beatAudioRef.current.pause();
+    }
+    if (vocalsAudioRef.current) {
+        vocalsAudioRef.current.pause();
+    }
     setIsBeatPlaying(false);
     setIsVocalsPlaying(false);
   }
@@ -375,23 +380,27 @@ export function RapBattle() {
             <CardContent>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-8 p-4">
                 <div className="flex flex-col items-center justify-end">
-                  <img
-                    src={selectedCharacter?.faceoff}
-                    alt={selectedCharacter?.name}
-                    data-ai-hint={selectedCharacter?.hint}
-                    className="w-3/4"
-                  />
-                  <h3 className="text-xl font-bold font-headline">{selectedCharacter?.name}</h3>
+                    {charactersLoading ? <Skeleton className="w-3/4 h-48" /> : 
+                        <img
+                            src={selectedCharacter?.faceoff}
+                            alt={selectedCharacter?.name}
+                            data-ai-hint={selectedCharacter?.hint}
+                            className="w-3/4"
+                        />
+                    }
+                  <h3 className="text-xl font-bold font-headline mt-2">{charactersLoading ? <Skeleton className="h-8 w-32" /> : selectedCharacter?.name}</h3>
                 </div>
                 <div className="text-4xl font-bold text-muted-foreground font-headline mx-4">VS</div>
                 <div className="flex flex-col items-center justify-end">
-                  <img
-                    src={selectedCharacter1?.faceoff}
-                    alt={selectedCharacter1?.name}
-                    data-ai-hint={selectedCharacter1?.hint}
-                    className="w-3/4"
-                 />
-                  <h3 className="text-xl font-bold font-headline">{selectedCharacter1?.name}</h3>
+                    {charactersLoading ? <Skeleton className="w-3/4 h-48" /> :
+                        <img
+                            src={selectedCharacter1?.faceoff}
+                            alt={selectedCharacter1?.name}
+                            data-ai-hint={selectedCharacter1?.hint}
+                            className="w-3/4"
+                        />
+                    }
+                  <h3 className="text-xl font-bold font-headline mt-2">{charactersLoading ? <Skeleton className="h-8 w-32" /> : selectedCharacter1?.name}</h3>
                 </div>
               </div>
             </CardContent>
@@ -399,7 +408,7 @@ export function RapBattle() {
 
           <div className="max-w-full container flex flex-col items-between gap-4">
             <h4 className="text-bold"> Pick a character </h4>
-            <div className="w-full h-auto flex md:flex-wrap items-center justify-around gap-2 cursor-pointer">
+            {charactersLoading ? <div className="w-full h-auto flex md:flex-wrap items-center justify-around gap-2"><Skeleton className="h-20 w-20 rounded-full" /><Skeleton className="h-20 w-20 rounded-full" /><Skeleton className="h-20 w-20 rounded-full" /><Skeleton className="h-20 w-20 rounded-full" /></div> : <div className="w-full h-auto flex md:flex-wrap items-center justify-around gap-2 cursor-pointer">
             {characters.map((character) => (
               <CharacterCard 
                 key={character.id} 
@@ -409,20 +418,20 @@ export function RapBattle() {
                 onClick={() => setSelectedCharacter(character)}
               />
             ))}
-            </div>
+            </div>}
             <div className="w-full h-auto text-center"><h3>VS.</h3></div>
             <h4 className="font-bold"> Pick an opponent </h4>
-            <div className="w-full h-auto flex items-center justify-around gap-2 cursor-pointer">
+            {charactersLoading ? <div className="w-full h-auto flex md:flex-wrap items-center justify-around gap-2"><Skeleton className="h-20 w-20 rounded-full" /><Skeleton className="h-20 w-20 rounded-full" /><Skeleton className="h-20 w-20 rounded-full" /><Skeleton className="h-20 w-20 rounded-full" /></div> : <div className="w-full h-auto flex items-center justify-around gap-2 cursor-pointer">
             {characters.map((character) => (
                <CharacterCard 
                 key={character.id} 
                 character={character} 
                 isSelected={selectedCharacter1?.id === character.id}
-                disabled={isLoading}
+                disabled={isLoading || character.id === selectedCharacter?.id}
                 onClick={() => setSelectedCharacter1(character)}
               />
             ))}
-            </div>
+            </div>}
           </div>
 
           <Card className="shadow-lg">
@@ -489,7 +498,7 @@ export function RapBattle() {
                 />
             </CardContent>
             <CardFooter>
-                 <Button type="submit" disabled={isLoading} size="lg" className="w-full text-white text-lg font-bold tracking-wide">
+                 <Button type="submit" disabled={isLoading || charactersLoading || !selectedCharacter || !selectedCharacter1} size="lg" className="w-full text-white text-lg font-bold tracking-wide">
                     {isLoading ? (
                     <Loader2 className="mr-2 h-6 w-6 animate-spin" />
                     ) : (

@@ -25,19 +25,6 @@ export const generateTtsAudio = onCallGenkit({
     region: 'us-central1', // Add explicit region
 }, generateTtsAudioFlow);
 
-export const createCharacter = v2.https.onCall({
-    region: 'us-central1', // Add explicit region
-}, async (request) => {
-    const characterData: Omit<Character, 'id' | 'createdAt'> = request.data;
-
-    const docRef = await db.collection('characters').add({
-        ...characterData,
-        createdAt: new Date()
-    });
-    
-    return { id: docRef.id, ...characterData };
-});
-
 export const getCharacters = v2.https.onCall({
     region: 'us-central1',
 }, async (request) => {
