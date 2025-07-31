@@ -1,7 +1,6 @@
 // index.ts - Fixed Firebase Functions Configuration
 import { onCallGenkit } from 'firebase-functions/https';
 import { defineSecret } from 'firebase-functions/params';
-import { HttpsError } from 'firebase-functions/https';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import * as v2 from 'firebase-functions/v2';
@@ -26,6 +25,7 @@ export const generateTtsAudio = onCallGenkit({
     region: 'us-central1', // Add explicit region
 }, generateTtsAudioFlow);
 
+/** 
 export const createCharacter = v2.https.onCall({
     region: 'us-central1', // Add explicit region
 }, async (request) => {
@@ -38,6 +38,7 @@ export const createCharacter = v2.https.onCall({
     
     return { id: docRef.id, ...characterData };
 });
+*/
 
 export const getCharacters = v2.https.onCall({
     region: 'us-central1',
@@ -50,6 +51,7 @@ export const getCharacters = v2.https.onCall({
     }));
 
     return characters;
+    console.log(characters.length + ' fetched characters sucessfully');
 });
 
 export const getCharacter = v2.https.onCall({
@@ -67,108 +69,8 @@ export const getCharacter = v2.https.onCall({
         id: doc.id,
         ...doc.data()
     };  
-});
 
-
-
-export const seedCharacters = v2.https.onCall({
-    region: 'us-central1',
-    cors: true,
-}, async (req) => { // Remove 'res' from the signature
-    const charactersData = [
-        {
-            name: "Peter Griffin",
-            voiceId: "fenrir",
-            image: "gs://suckerpunch.firebasestorage.app/img/peter_avatar.png",
-            faceoff: "gs://suckerpunch.firebasestorage.app/img/peter_faceoff.png",
-            hint: "You are Peter Griffin from Family Guy",
-            personality: ["Dummy", "Thick boston accent"],
-            catchPhrases: ['EhHEhEHhe']
-        },
-        {
-            name: "Shrek",
-            voiceId: "puck",
-            image: "gs://suckerpunch.firebasestorage.app/img/shrek_avatar.png",
-            faceoff: "gs://suckerpunch.firebasestorage.app/img/shrek_faceoff.png",
-            hint: "You are Shrek",
-            personality: ["Mean", "Unfriendly"],
-            catchPhrases: ['What are you doing in my swamp?']
-        },
-        {
-            name: "Batman 66'",
-            voiceId: "charon",
-            image: "gs://suckerpunch.firebasestorage.app/img/batman_avatar.png",
-            faceoff: "gs://suckerpunch.firebasestorage.app/img/batman_faceoff.png",
-            hint: "You are batman from 1966",
-            personality: ["Fair", "Heroic"],
-            catchPhrases: ['I am Batman']
-        },
-        {
-            name: "Bender",
-            voiceId: "zephyr",
-            image: "gs://suckerpunch.firebasestorage.app/img/bender_avatar.png",
-            faceoff: "gs://suckerpunch.firebasestorage.app/img/bender_faceoff.png",
-            hint: "You are bender from Futurama",
-            personality: ["Alcoolic", "Narcissistic", "Ironic"],
-            catchPhrases: ['I am Bender']
-        },
-        {
-            name: "Realistic Fish Head",
-            voiceId: "vindemiatrix",
-            image: "gs://suckerpunch.firebasestorage.app/img/realisticfishhead_avatar.png",
-            faceoff: "gs://suckerpunch.firebasestorage.app/img/realisticfishhead_faceoff.png",
-            hint: "You are Realistic Fish Head, news anchor from Bikini Bottom.",
-            personality: ['Calm', 'Random', 'Volatile'],
-            catchPhrases: ['BREAKING NEWS', 'LIVE FROM BIKINI BOTTOM']
-        },
-        {
-           name: "Shaggy",
-           voiceId: "umbriel",
-           image: "gs://suckerpunch.firebasestorage.app/img/shaggy_avatar.png",
-           faceoff: "gs://suckerpunch.firebasestorage.app/img/shaggy_faceoff.png",
-           hint: "You are Shaggy from Scooby Doo.",
-           personality: ['Mean', 'Random', 'Volatile'],
-           catchPhrases: ['I am Shaggy']
-        },
-        {
-            name: "Hagrid PS2",
-            voiceId: "luna",
-            image: "gs://suckerpunch.firebasestorage.app/img/hagrid_avatar.png",
-            faceoff: "gs://suckerpunch.firebasestorage.app/img/hagrid_faceoff.png",
-            hint: "You are Hagrid from Harry Potter but the PS2 Game version",
-            personality: ['Grumpy'],
-            catchPhrases: ['Hey harry']
-        },
-        {
-            name: "Parappa The Rapper",
-            voiceId: "umbriel",
-            image: "gs://suckerpunch.firebasestorage.app/img/parapa_avatar.png",
-            faceoff: "gs://suckerpunch.firebasestorage.app/img/parapa_faceoff.png",
-            hint: "You are Parappa The Rapper",
-            personality: ['Stupid'],
-            catchPhrases: ['I am Parappa'],
-        }
-    ];
-
-    try {
-        // Ensure 'db' is initialized and accessible here
-        const batch = db.batch(); 
-        for (const characterData of charactersData) {
-            const docRef = db.collection('characters').doc();
-            batch.set(docRef, {
-                ...characterData,
-                createdAt: new Date()
-            });
-        }
-
-        await batch.commit();
-        // Return the response data directly
-        return { message: `Successfully seeded ${charactersData.length} characters.` }; 
-    } catch (error) {
-        console.error('Error seeding characters:', error);
-        // Throw an HttpsError for errors in onCall functions
-        throw new HttpsError('internal', 'Failed to seed characters', error);
-    }
+    console.log('Fetched characters sucessfully');
 });
 
 

@@ -9,7 +9,7 @@ const firebaseConfig = {
   "storageBucket": "suckerpunch.firebasestorage.app",
   "apiKey": "AIzaSyA9kn5DxbBL3KTqPrKGZKML3IsmtxuCwOw",
   "authDomain": "suckerpunch.firebaseapp.com",
-  "measurementId": "",
+  "measurementId": "G-YSYZ0LDK67",
   "messagingSenderId": "469315916206"
 };
 
