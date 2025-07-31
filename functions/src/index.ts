@@ -25,7 +25,6 @@ export const generateTtsAudio = onCallGenkit({
     region: 'us-central1', // Add explicit region
 }, generateTtsAudioFlow);
 
-/** 
 export const createCharacter = v2.https.onCall({
     region: 'us-central1', // Add explicit region
 }, async (request) => {
@@ -38,7 +37,6 @@ export const createCharacter = v2.https.onCall({
     
     return { id: docRef.id, ...characterData };
 });
-*/
 
 export const getCharacters = v2.https.onCall({
     region: 'us-central1',
@@ -51,7 +49,6 @@ export const getCharacters = v2.https.onCall({
     }));
 
     return characters;
-    console.log(characters.length + ' fetched characters sucessfully');
 });
 
 export const getCharacter = v2.https.onCall({
@@ -69,8 +66,6 @@ export const getCharacter = v2.https.onCall({
         id: doc.id,
         ...doc.data()
     };  
-
-    console.log('Fetched characters sucessfully');
 });
 
 
