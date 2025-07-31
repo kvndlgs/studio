@@ -116,6 +116,7 @@ export function RapBattle() {
         }
       } catch (error) {
         console.error('Failed to fetch characters:', error);
+        console.log('Could not fetch characters from the database.', error);
         toast({
           variant: "destructive",
           title: "Failed to load characters",
