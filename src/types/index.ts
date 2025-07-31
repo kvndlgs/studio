@@ -1,10 +1,13 @@
 export interface Character {
-    id: number;
+    id: string;
     name: string;
     image: string;
     faceoff?: string;
     hint: string;
     voiceId: string;
+    personality: string[];
+    catchPharases: string[];
+    createdAt: Date;
 }
 
 export interface Beats {

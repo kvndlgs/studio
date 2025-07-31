@@ -1,6 +1,6 @@
 import React from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
-import { Character } from '../types';
+import { Character } from './NRapBattle';
 import { cn } from '@/lib/utils';
 
 interface CharacterCardProps {
