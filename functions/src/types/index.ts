@@ -5,7 +5,7 @@ export interface Character {
     faceoff?: string;
     voiceId: string;
     hint: string;
-    personality: string[],
-    catchPhrases: string[],
+    personality: string[];
+    catchPhrases: string[];
     createdAt: Date;
 }

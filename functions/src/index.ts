@@ -1,5 +1,6 @@
 // index.ts - Fixed Firebase Functions Configuration
 import { onCallGenkit } from 'firebase-functions/https';
+//import { functions } from 'firebase-functions';
 import { defineSecret } from 'firebase-functions/params';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
@@ -8,6 +9,7 @@ import { Character } from './types/index';
 import { generateRapLyricsFlow } from './ai/flows/generate-rap-lyrics';
 import { generateTtsAudioFlow } from './ai/flows/generate-tts-audio';
 import './ai/genkit';
+
 
 const apiKey = defineSecret('GEMINI_API_KEY');
 
@@ -28,8 +30,15 @@ export const generateTtsAudio = onCallGenkit({
 export const getCharacters = v2.https.onCall({
     region: 'us-central1',
 }, async (request) => {
+  if (!request.auth) {
+    throw new v2.https.HttpsError(
+      'unauthenticated', 
+      'You must be authenticated to access this resource you peasant.'
+    );
+  }
+  console.log("Authenticated user's UID:", request.auth.uid);
     const snapshot = await db.collection('characters').get();
-
+    console.log(snapshot);
     const characters = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()

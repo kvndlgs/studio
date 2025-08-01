@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+// import { signInAnonymously } from 'firebase/auth';
+import { auth } from '@/lib/firebase'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { z } from "zod";
-// Replace these imports with Firebase functions
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Download, Share2, Music, MicVocal, Wand2, Play, Pause, AlertTriangle, Speaker } from "lucide-react";
 import Image from "next/image";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Progress } from "./ui/progress";
@@ -77,7 +78,6 @@ const generateRapBattle = httpsCallable<{
 const getCharacters = httpsCallable<{}, Character[]>(functions, 'getCharacters');
 
 export function RapBattle() {
-  // Add characters state
   const [characters, setCharacters] = useState<Character[]>([]);
   const [charactersLoading, setCharactersLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -102,7 +102,40 @@ export function RapBattle() {
     },
   });
 
-  // Fetch characters on component mount
+  useEffect(() => {
+    const fetchCharacters = async () => {
+      try {
+        if (!auth.currentUser) {
+          console.error("User is not authenticated.");
+          return
+        }
+        const result = await getCharacters({});
+        console.log('Feteched Characters', result.data);
+        
+        const fetchedCharacters = result.data as Character[];
+        setCharacters(fetchedCharacters);
+
+        if(fetchedCharacters.length >= 2) {
+          setSelectedCharacter(fetchedCharacters[0]);
+          setSelectedCharacter1(fetchedCharacters[1]);
+        }
+      } catch (error) {
+        console.log('Failed to fetch those dumb fucking characters:', error);
+        toast({
+          variant: "destructive",
+          title: "Failed to load characters",
+          description: "Could not fetch characters from the database.",
+        });
+      } finally {
+         setCharactersLoading(false);
+      }
+    };
+    
+    fetchCharacters();
+    
+  }, [toast]);
+  
+  /** 
   useEffect(() => {
     const fetchCharacters = async () => {
       try {
@@ -110,6 +143,7 @@ export function RapBattle() {
         const result = await getCharacters({});
         const fetchedCharacters = result.data as Character[];
         setCharacters(fetchedCharacters);
+        console.log("Fetched characters:", fetchedCharacters);
         
         // Set default selected characters once characters are loaded
         if (fetchedCharacters.length >= 2) {
@@ -118,6 +152,7 @@ export function RapBattle() {
         }
       } catch (error) {
         console.error('Failed to fetch characters:', error);
+        console.log('Failed to fucking fetch with the code:', error);
         toast({
           variant: "destructive",
           title: "Failed to load characters",
@@ -130,6 +165,7 @@ export function RapBattle() {
 
     fetchCharacters();
   }, [toast]);
+  */
 
   useEffect(() => {
     if (lyrics) {
@@ -211,7 +247,7 @@ export function RapBattle() {
     setTtsAudio(null);
     
     try {
-      setLoadingStatus("Generating lyrical fire...");
+      setLoadingStatus("Generating mom's jokes...");
       
       // Call the Firebase function instead of direct AI calls
       const result = await generateRapBattle({
@@ -305,7 +341,7 @@ export function RapBattle() {
                         <AlertTriangle className="h-4 w-4" />
                         <AlertTitle>Audio Error</AlertTitle>
                         <AlertDescription>
-                            Could not load the beat. Please ensure it exists in the `/public/audio` directory.
+                            Are you restarded? Please ensure it exists in the `/public/audio` directory.
                         </AlertDescription>
                     </Alert>
                 </div>
@@ -359,10 +395,10 @@ export function RapBattle() {
     <section className="container max-w-5xl py-12">
       <div className="text-center mb-10">
         <h2 className="text-4xl font-bold font-headline tracking-tighter sm:text-5xl md:text-6xl">
-          SET MATCH UP
+          SET BATTLE MATCH UP
         </h2>
         <p className="mt-4 text-muted-foreground md:text-xl">
-          Choose 2 opponents, pick a beat, and let the sucker punches fly
+          Pick 2 opponents, a beat, and let the sucker punches fly
         </p>
       </div>
       <Form {...form}>
@@ -371,7 +407,7 @@ export function RapBattle() {
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-2xl font-headline">
                 <MicVocal className="h-8 w-8 text-primary" />
-                 The Contenders
+                 Main Event
               </CardTitle>
               <CardDescription>
                 Two enter the ring. Only one will leave a legend.
