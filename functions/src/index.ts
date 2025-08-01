@@ -28,7 +28,7 @@ export const generateTtsAudio = onCallGenkit({
 }, generateTtsAudioFlow);
 
 export const getCharacters = v2.https.onCall({
-    region: 'us-central1',
+    region: 'us-central1'
 }, async (request) => {
   if (!request.auth) {
     throw new v2.https.HttpsError(
@@ -50,13 +50,20 @@ export const getCharacters = v2.https.onCall({
 export const getCharacter = v2.https.onCall({
     region: 'us-central1',
 }, async (request) => {
-    const { characterId } = request.data;
+  if (!request.auth) {
+    throw new v2.https.HttpsError(
+      'unauthenticated', 
+      'You must be authenticated to access this resource you peasant.'
+    );
+  }
+  console.log("Authenticated user's UID:", request.auth.uid);
+  const { characterId } = request.data;
 
-    const doc = await db.collection('characters').doc(characterId).get();
+  const doc = await db.collection('characters').doc(characterId).get();
 
-    if (!doc.exists) {
+  if (!doc.exists) {
         throw new Error('Character not found');
-    }
+  }
 
     return {
         id: doc.id,

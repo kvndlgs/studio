@@ -1,10 +1,10 @@
-# **App Name**: Groq Rap Rumble
+# **App Name**: SUCKERPUNCH AI
 
 ## Core Features:
 
-- Lyrics Generation: Generate rap lyrics for Peter Griffin and Shrek using the Groq API as a tool; option to select other APIs.
-- Voice Synthesis: Synthesize vocals for both characters, choosing their respective voices, using the Deepgram API.
-- Beat Selection: Provide 4 pre-selected instrumental beats for the rap battle.
+- Lyrics Generation: Generate rap lyrics for Peter Griffin and Shrek using genkit as a tool; option to select other APIs.
+- Voice Synthesis: Synthesize vocals for both characters, choosing their respective voices, using genkit.
+- Beat Selection: Provide pre-selected instrumental beats for the rap battle.
 - Beat Sync: Synchronize generated vocals with the selected instrumental beat, at the correct BPM.
 - Download Battle: Allow users to download the completed rap battle.
 - Share Battle: Enable sharing of the rap battle on social media platforms.

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-// import { signInAnonymously } from 'firebase/auth';
 import { auth } from '@/lib/firebase'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
@@ -135,37 +134,7 @@ export function RapBattle() {
     
   }, [toast]);
   
-  /** 
-  useEffect(() => {
-    const fetchCharacters = async () => {
-      try {
-        setCharactersLoading(true);
-        const result = await getCharacters({});
-        const fetchedCharacters = result.data as Character[];
-        setCharacters(fetchedCharacters);
-        console.log("Fetched characters:", fetchedCharacters);
-        
-        // Set default selected characters once characters are loaded
-        if (fetchedCharacters.length >= 2) {
-          setSelectedCharacter(fetchedCharacters[0]);
-          setSelectedCharacter1(fetchedCharacters[1]);
-        }
-      } catch (error) {
-        console.error('Failed to fetch characters:', error);
-        console.log('Failed to fucking fetch with the code:', error);
-        toast({
-          variant: "destructive",
-          title: "Failed to load characters",
-          description: "Could not fetch characters from the database.",
-        });
-      } finally {
-        setCharactersLoading(false);
-      }
-    };
 
-    fetchCharacters();
-  }, [toast]);
-  */
 
   useEffect(() => {
     if (lyrics) {
