@@ -1,103 +1,61 @@
-import { Character } from '@/types'
+import { Character } from '@/types';
 
 export const characters: Character[] = [
-    {
-        id: '0',
-        name: 'Peter Griffin',
-        voiceId: 'luna',
-        image: 'https://i.imgur.com/Xd3AMxQ.png',
-        faceoff: 'https://i.imgur.com/i8myUt1.png',
-        hint: 'You are Peter Griffin from Family Guy',
-        personality: ['Obnoxious', 'Immature', 'Impulsive', 'Charming'],
-        catchPharases: ['Giggity', 'Freaking Sweet'],
-        createdAt: new Date()
-    },
-    {
-        id: '1',
-        name: 'Peter Griffin',
-        voiceId: 'luna',
-        image: 'https://i.imgur.com/Xd3AMxQ.png',
-        faceoff: 'https://i.imgur.com/i8myUt1.png',
-        hint: 'You are Peter Griffin from Family Guy',
-        personality: ['Obnoxious', 'Immature', 'Impulsive', 'Charming'],
-        catchPharases: ['Giggity', 'Freaking Sweet'],
-        createdAt: new Date()
-    },
-    {
-        id: '2',
-        name: 'Shrek',
-        voiceId: 'luna',
-        image: 'https://i.imgur.com/Xd3AMxQ.png',
-        faceoff: 'https://i.imgur.com/i8myUt1.png',
-        hint: 'You are Peter Griffin from Family Guy',
-        personality: ['Obnoxious', 'Immature', 'Impulsive', 'Charming'],
-        catchPharases: ['Giggity', 'Freaking Sweet'],
-        createdAt: new Date()
-    },
-    {
-        id: '3',
-        name: 'Bender',
-        voiceId: 'luna',
-        image: 'https://i.imgur.com/Xd3AMxQ.png',
-        faceoff: 'https://i.imgur.com/i8myUt1.png',
-        hint: 'You are Peter Griffin from Family Guy',
-        personality: ['Obnoxious', 'Immature', 'Impulsive', 'Charming'],
-        catchPharases: ['Giggity', 'Freaking Sweet'],
-        createdAt: new Date()
-    },
-    {
-        id: '4',
-        name: 'Shaggy',
-        voiceId: 'luna',
-        image: 'https://i.imgur.com/Xd3AMxQ.png',
-        faceoff: 'https://i.imgur.com/i8myUt1.png',
-        hint: 'You are Peter Griffin from Family Guy',
-        personality: ['Obnoxious', 'Immature', 'Impulsive', 'Charming'],
-        catchPharases: ['Giggity', 'Freaking Sweet'],
-        createdAt: new Date()
-    },
-    {
-        id: '5',
-        name: 'Realistic Fish Head',
-        voiceId: 'luna',
-        image: 'https://i.imgur.com/Xd3AMxQ.png',
-        faceoff: 'https://i.imgur.com/i8myUt1.png',
-        hint: 'You are Realistic Fish Head',
-        personality: ['Obnoxious', 'Immature', 'Impulsive', 'Charming'],
-        catchPharases: ['Giggity', 'Freaking Sweet'],
-        createdAt: new Date()
-    },
-    {
-        id: '6',
-        name: 'Hagrid PS2',
-        voiceId: 'luna',
-        image: 'https://i.imgur.com/Xd3AMxQ.png',
-        faceoff: 'https://i.imgur.com/i8myUt1.png',
-        hint: 'You are Hagrid from Harry Potter PS2 video game',
-        personality: ['Obnoxious', 'Immature', 'Impulsive', 'Charming'],
-        catchPharases: ['Giggity', 'Freaking Sweet'],
-        createdAt: new Date()
-    },
-    {
-        id: '7',
-        name: 'Parappa The Rapper',
-        voiceId: 'luna',
-        image: 'https://i.imgur.com/Xd3AMxQ.png',
-        faceoff: 'https://i.imgur.com/i8myUt1.png',
-        hint: 'You are Parappa The Rapper',
-        personality: ['Obnoxious', 'Immature', 'Impulsive', 'Charming'],
-        catchPharases: ['Giggity', 'Freaking Sweet'],
-        createdAt: new Date()
-    },
-    {
-        id: '8',
-        name: 'Batman 1966',
-        voiceId: 'luna',
-        image: 'https://i.imgur.com/Xd3AMxQ.png',
-        faceoff: 'https://i.imgur.com/i8myUt1.png',
-        hint: 'You are Batman from the 1960 TV Serie',
-        personality: ['Obnoxious', 'Immature', 'Impulsive', 'Charming'],
-        catchPharases: ['Giggity', 'Freaking Sweet'],
-        createdAt: new Date()
-    },
-]
+  {
+    id: 'peter-griffin',
+    name: 'Peter Griffin',
+    image: '/img/characters/peter.png',
+    faceoff: '/img/characters/peter-faceoff.png',
+    hint: 'family guy',
+    voiceId: 'en-US-Standard-D',
+    personality: ['oblivious', 'impulsive', 'immature', 'loud-mouthed'],
+    catchPharases: ['Hehehehe', "Freakin' sweet!", 'Giggity giggity goo'],
+    createdAt: new Date(),
+  },
+  {
+    id: 'shrek',
+    name: 'Shrek',
+    image: '/img/characters/shrek.png',
+    faceoff: '/img/characters/shrek-faceoff.png',
+    hint: 'ogre swamp',
+    voiceId: 'en-AU-Standard-B',
+    personality: ['grumpy', 'loner', 'territorial', 'cynical but good-hearted'],
+    catchPharases: ["What are you doin' in my swamp?!", "Onions have layers.", "Ogres are like onions."],
+    createdAt: new Date(),
+  },
+  {
+    id: 'homer-simpson',
+    name: 'Homer Simpson',
+    image: '/img/characters/homer.png',
+    faceoff: '/img/characters/homer-faceoff.png',
+    hint: 'doh donut',
+    voiceId: 'en-US-Wavenet-D',
+    personality: ['lazy', 'dim-witted', 'loving father', 'short-tempered'],
+    catchPharases: ["D'oh!", "Mmm, donuts.", "Woo-hoo!"],
+    createdAt: new Date(),
+  },
+  {
+    id: 'spongebob',
+    name: 'SpongeBob',
+    image: '/img/characters/spongebob.png',
+    faceoff: '/img/characters/spongebob-faceoff.png',
+    hint: 'krabby patty',
+    voiceId: 'en-US-Wavenet-E',
+    personality: ['optimistic', 'naive', 'energetic', 'loyal friend'],
+    catchPharases: ["I'm ready, I'm ready!", "Krabby Patty formula", "Barnacles!"],
+    createdAt: new Date(),
+  },
+  {
+    id: 'mario',
+    name: 'Mario',
+    image: '/img/characters/mario.png',
+    faceoff: '/img/characters/mario-faceoff.png',
+    hint: 'plumber princess',
+    voiceId: 'it-IT-Standard-A',
+    personality: ['brave', 'cheerful', 'kind-hearted', 'determined'],
+    catchPharases: ["It's-a me, Mario!", "Let's-a go!", "Mamma mia!"],
+    createdAt: new Date(),
+  },
+];
+
+    

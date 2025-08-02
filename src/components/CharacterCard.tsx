@@ -2,6 +2,7 @@ import React from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 import { Character } from '@/types';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface CharacterCardProps {
     character: Character;
@@ -18,10 +19,10 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
     return (
         <div
             className={cn(
-                "w-full h-auto flex items-center gap-2 justify-around cursor-pointer",
+                "w-full h-auto flex flex-col items-center justify-center text-center gap-2 cursor-pointer p-2 rounded-lg",
                 "transition-all duration-300",
-                isSelected ? "opacity-100 scale-105" : "opacity-70 grayscale hover:opacity-100 hover:grayscale-0",
-                disabled && "pointer-events-none opacity-50 grayscale"
+                isSelected ? "opacity-100 scale-105 bg-primary/10" : "opacity-70 hover:opacity-100 hover:bg-primary/5",
+                disabled && "pointer-events-none opacity-40 grayscale"
             )}
             onClick={disabled ? undefined : onClick}
         >
@@ -32,6 +33,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
                 <AvatarImage src={character.image} alt={character.name} className="rounded-full object-cover" />
                 <AvatarFallback>{character.name.charAt(0)}</AvatarFallback>
             </Avatar>
+            <p className="font-semibold text-sm">{character.name}</p>
         </div>
     );
 };

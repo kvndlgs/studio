@@ -6,33 +6,11 @@ import {googleAI} from '@genkit-ai/googleai';
 import {firebase} from '@genkit-ai/firebase';
 import {z} from 'zod';
 import {NextResponse} from 'next/server';
-import {getFirestore, doc, getDoc} from 'firebase-admin/firestore';
-import {initializeApp, getApps, cert} from 'firebase-admin/app';
 import wav from 'wav';
-
-// Check if the service account key is available in environment variables
-if (!process.env.GCLOUD_PROJECT) {
-  try {
-    const serviceAccount = JSON.parse(
-      process.env.FIREBASE_SERVICE_ACCOUNT_KEY || '{}'
-    );
-    initializeApp({
-      credential: cert(serviceAccount),
-    });
-  } catch (e) {
-    console.log(
-      'Could not initialize Firebase Admin SDK. ' +
-        'Please provide FIREBASE_SERVICE_ACCOUNT_KEY env variable.'
-    );
-  }
-} else {
-  // Otherwise, initialize with default credentials
-  initializeApp();
-}
+import { characters } from '@/data/characters';
 
 configureGenkit({
   plugins: [
-    firebase(),
     googleAI({
       apiKey: process.env.GEMINI_API_KEY,
     }),
@@ -172,23 +150,15 @@ export async function POST(req: Request) {
       );
     }
 
-    const db = getFirestore();
-    const char1Doc = await getDoc(doc(db, 'characters', character1Id));
-    const char2Doc = await getDoc(doc(db, 'characters', character2Id));
+    const character1 = characters.find(c => c.id === character1Id);
+    const character2 = characters.find(c => c.id === character2Id);
 
-    if (!char1Doc.exists() || !char2Doc.exists()) {
+    if (!character1 || !character2) {
       return NextResponse.json(
         {error: 'One or both characters not found'},
         {status: 404}
       );
     }
-
-    const character1 = {id: char1Doc.id, ...char1Doc.data()} as z.infer<
-      typeof CharacterSchema
-    >;
-    const character2 = {id: char2Doc.id, ...char2Doc.data()} as z.infer<
-      typeof CharacterSchema
-    >;
 
     // Generate Lyrics
     const lyrics = await generateRapLyricsFlow({
@@ -197,18 +167,24 @@ export async function POST(req: Request) {
       topic,
     });
 
-    // Generate TTS for both characters
+    // Generate TTS for both characters in parallel
+    const [audio1, audio2] = await Promise.all([
+        generateTtsAudioFlow({ lyrics: lyrics.lyricsCharacter1, voiceId: character1.voiceId }),
+        generateTtsAudioFlow({ lyrics: lyrics.lyricsCharacter2, voiceId: character2.voiceId })
+    ]);
+    
+    // This is a simplified combination. A real app might do more sophisticated audio mixing.
+    // For now, we'll just send back one of the audio files, but in a real scenario, you'd combine them.
+    // A more advanced implementation would use a multi-speaker TTS flow if available or mix audio server-side.
+    
     const combinedLyrics = `
             Speaker 1: ${lyrics.lyricsCharacter1}
             Speaker 2: ${lyrics.lyricsCharacter2}
         `;
 
-    // This part assumes you have a multi-speaker supported model/setup
-    // For simplicity, we'll generate a single audio track with one voice for now.
-    // A more advanced implementation would use a multi-speaker TTS flow.
     const audioDataUri = await generateTtsAudioFlow({
-        lyrics: combinedLyrics, // A simplified approach.
-        voiceId: 'onyx', // A default voice
+        lyrics: combinedLyrics,
+        voiceId: 'onyx', // A default voice for the combined track
     });
 
 
@@ -220,3 +196,5 @@ export async function POST(req: Request) {
     return NextResponse.json({error: errorMessage}, {status: 500});
   }
 }
+
+    
