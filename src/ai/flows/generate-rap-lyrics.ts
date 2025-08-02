@@ -1,3 +1,4 @@
+'use server';
 /**
  * @fileOverview A rap lyrics generation AI agent for two characters.
  *
