@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -15,7 +16,6 @@ import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Progress } from "./ui/progress";
 import { Character } from '@/types'
-import { characters as localCharacters } from '@/data/characters'
 import { CharacterCard } from "./CharacterCard";
 import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
@@ -86,9 +86,8 @@ export function RapBattle() {
         toast({
           variant: "destructive",
           title: "Failed to load characters",
-          description: "Could not fetch character data. Using local fallback.",
+          description: "Could not fetch character data. Check Firestore rules and connection.",
         });
-        setCharacters(localCharacters);
       } finally {
         setCharactersLoading(false);
       }
@@ -105,7 +104,7 @@ export function RapBattle() {
       setIsResultsVisible(false);
     }
   }, [lyrics]);
-  
+
   useEffect(() => {
     if (beatAudioRef.current) {
       beatAudioRef.current.pause();
@@ -175,7 +174,7 @@ export function RapBattle() {
     setLyrics(null);
     setTtsAudio(null);
     setLoadingStatus("Generating rap battle...");
-    
+
     try {
       const response = await fetch('/api/generate', {
         method: 'POST',
@@ -190,7 +189,8 @@ export function RapBattle() {
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.statusText}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || `API error: ${response.statusText}`);
       }
 
       const battleData = await response.json();
@@ -203,20 +203,19 @@ export function RapBattle() {
         description: `${selectedCharacter.name} vs ${selectedCharacter1.name} is ready to rumble!`,
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed during generation:", error);
       toast({
         variant: "destructive",
         title: "Uh oh! Something went wrong.",
-        description:
-          "There was a problem generating the rap battle. Please try again.",
+        description: error.message || "There was a problem generating the rap battle. Please try again.",
       });
     } finally {
       setIsLoading(false);
       setLoadingStatus("");
     }
   };
-  
+
   const resetBattle = () => {
     setLyrics(null);
     setTtsAudio(null);
@@ -253,7 +252,7 @@ export function RapBattle() {
                         <p className="font-bold text-lg font-headline">{selectedBeat.name}</p>
                     </div>
                 </div>
-                
+
                 <div className="flex items-center gap-4">
                      <Button size="lg" className="rounded-full w-20 h-20" aria-label="Play Beat" onClick={toggleBeatPlayback} disabled={audioError}>
                         {isBeatPlaying ? <Pause className="w-10 h-10" /> : <Play className="w-10 h-10 ml-1" />}
@@ -316,7 +315,7 @@ export function RapBattle() {
                 </CardContent>
             </Card>
         </div>
-        
+
         <div className="mt-12 text-center">
             <Button onClick={resetBattle} size="lg">
                 <Wand2 className="mr-2 h-5 w-5"/> New Battle
@@ -358,7 +357,7 @@ export function RapBattle() {
                             data-ai-hint={selectedCharacter?.hint}
                             className="w-3/4"
                         />
-                    
+
                   <h3 className="text-xl font-bold font-headline mt-2"> {selectedCharacter?.name}</h3>
                 </div>
                 <div className="text-4xl font-bold text-muted-foreground font-headline mx-4">VS</div>
@@ -370,7 +369,7 @@ export function RapBattle() {
                             data-ai-hint={selectedCharacter1?.hint}
                             className="w-3/4"
                         />
-                    
+
                   <h3 className="text-xl font-bold font-headline mt-2">{ selectedCharacter1?.name}</h3>
                 </div>
               </div>
@@ -387,16 +386,16 @@ export function RapBattle() {
               </div>
           ) : (
             characters.map((character) => (
-              <CharacterCard 
-                key={character.id} 
-                character={character} 
+              <CharacterCard
+                key={character.id}
+                character={character}
                 isSelected={selectedCharacter?.id === character.id}
                 disabled={isLoading}
                 onClick={() => setSelectedCharacter(character)}
               />
             ))
           )}
-    
+
             <div className="w-full h-auto text-center"><h3>VS.</h3></div>
 
             <h4 className="font-bold"> Pick an opponent </h4>
@@ -408,9 +407,9 @@ export function RapBattle() {
               </div>
           ) : (
             characters.map((character) => (
-               <CharacterCard 
-                key={character.id} 
-                character={character} 
+               <CharacterCard
+                key={character.id}
+                character={character}
                 isSelected={selectedCharacter1?.id === character.id}
                 disabled={isLoading || character.id === selectedCharacter?.id}
                 onClick={() => setSelectedCharacter1(character)}
@@ -455,7 +454,7 @@ export function RapBattle() {
                 {audioError && <Alert variant="destructive" className="mt-4"><AlertTriangle className="h-4 w-4" /><AlertTitle>Audio File Not Found</AlertTitle><AlertDescription>Could not load '{selectedBeat.name}'. Make sure the file exists at `public{selectedBeat.audioSrc}`.</AlertDescription></Alert>}
             </CardContent>
           </Card>
-          
+
           <Card className="shadow-lg">
             <CardHeader>
                <CardTitle className="flex items-center gap-3 text-2xl font-headline">
