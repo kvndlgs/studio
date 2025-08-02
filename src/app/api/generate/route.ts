@@ -1,53 +1,55 @@
 
 'use server';
 
-import {defineFlow, configureGenkit} from 'genkit';
-import {googleAI} from '@genkit-ai/googleai';
-import {firebase} from '@genkit-ai/firebase';
-import {z} from 'zod';
-import {NextResponse} from 'next/server';
-import wav from 'wav';
+import { ai } from '@/app/api/generate/genkit';
 import { characters } from '@/data/characters';
-
-configureGenkit({
-  plugins: [
-    googleAI({
-      apiKey: process.env.GEMINI_API_KEY,
-    }),
-  ],
-  logSinks: [],
-  enableTracing: false,
-});
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import wav from 'wav';
 
 // Schemas
-const CharacterSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  voiceId: z.string(),
-  image: z.string(),
-  faceoff: z.string().optional(),
-  hint: z.string(),
-  personality: z.array(z.string()),
-  catchPharases: z.array(z.string()),
-});
-
 const GenerateRapLyricsInputSchema = z.object({
-  character1: CharacterSchema,
-  character2: CharacterSchema,
-  topic: z.string(),
+  character1: z.string().describe('The name of the first character.'),
+  character2: z.string().describe('The name of the second character.'),
+  topic: z.string().describe('The topic of the rap battle'),
+  numVerses: z
+    .number()
+    .describe('The number of verses to generate for each character.'),
 });
+type GenerateRapLyricsInput = z.infer<typeof GenerateRapLyricsInputSchema>;
 
 const GenerateRapLyricsOutputSchema = z.object({
-  lyricsCharacter1: z.string().describe('The rap lyrics for character 1'),
-  lyricsCharacter2: z.string().describe('The rap lyrics for character 2'),
+  lyricsCharacter1: z
+    .string()
+    .describe('The rap lyrics for the first character.'),
+  lyricsCharacter2: z
+    .string()
+    .describe('The rap lyrics for the second character.'),
 });
+type GenerateRapLyricsOutput = z.infer<typeof GenerateRapLyricsOutputSchema>;
 
 const GenerateTtsAudioInputSchema = z.object({
-  lyrics: z.string(),
-  voiceId: z.string(),
+  lyricsCharacter1: z.string().describe('The lyrics for the first character.'),
+  character1Voice: z
+    .string()
+    .describe('The voice ID for the first character.'),
+  lyricsCharacter2: z.string().describe('The lyrics for the second character.'),
+  character2Voice: z
+    .string()
+    .describe('The voice ID for the second character.'),
 });
+type GenerateTtsAudioInput = z.infer<typeof GenerateTtsAudioInputSchema>;
 
-// Text-to-WAV conversion
+const GenerateTtsAudioOutputSchema = z.object({
+  audioDataUri: z
+    .string()
+    .describe(
+      "The generated audio as a data URI. Expected format: 'data:audio/wav;base64,<encoded_data>'."
+    ),
+});
+type GenerateTtsAudioOutput = z.infer<typeof GenerateTtsAudioOutputSchema>;
+
+// Helper function
 async function toWav(
   pcmData: Buffer,
   channels = 1,
@@ -60,80 +62,102 @@ async function toWav(
       sampleRate: rate,
       bitDepth: sampleWidth * 8,
     });
-    const bufs: Buffer[] = [];
+    let bufs = [] as any[];
     writer.on('error', reject);
-    writer.on('data', (d) => bufs.push(d));
-    writer.on('end', () =>
-      resolve(Buffer.concat(bufs).toString('base64'))
-    );
+    writer.on('data', function (d) {
+      bufs.push(d);
+    });
+    writer.on('end', function () {
+      resolve(Buffer.concat(bufs).toString('base64'));
+    });
     writer.write(pcmData);
     writer.end();
   });
 }
 
 // Genkit Flows
-const generateRapLyricsFlow = defineFlow(
+const generateRapLyricsFlow = ai.defineFlow(
   {
-    name: 'generateRapLyrics',
+    name: 'generateRapLyricsFlow',
     inputSchema: GenerateRapLyricsInputSchema,
     outputSchema: GenerateRapLyricsOutputSchema,
   },
   async (input) => {
-    const prompt = `You are a rap battle lyricist. Generate a rap battle between two characters.
-      Character 1: ${input.character1.name}
-      - Personality: ${input.character1.personality.join(', ')}
-      - Hint: ${input.character1.hint}
-      - Catchphrases: ${input.character1.catchPharases.join(', ')}
-
-      Character 2: ${input.character2.name}
-      - Personality: ${input.character2.personality.join(', ')}
-      - Hint: ${input.character2.hint}
-      - Catchphrases: ${input.character2.catchPharases.join(', ')}
-
-      The topic of the rap battle is: "${input.topic}".
-
-      Each character should have one verse. The lyrics should be creative, funny, and in character.
-      Return ONLY the JSON object with the lyrics.
-    `;
-
-    const llmResponse = await googleAI.generateText({
-      model: 'gemini-pro',
-      prompt: prompt,
-      output: {
-        format: 'json',
-        schema: GenerateRapLyricsOutputSchema,
-      },
+    const prompt = ai.definePrompt({
+      name: 'generateRapLyricsPrompt',
+      input: { schema: GenerateRapLyricsInputSchema },
+      output: { schema: GenerateRapLyricsOutputSchema },
+      prompt: `You are a rap lyric generator. You will generate rap lyrics for two characters based on a given topic, be mean and funny.
+         Character 1: {{{character1}}}
+         Character 2: {{{character2}}}
+         Topic: {{{topic}}}
+         Number of verses per character: {{{numVerses}}}
+         Generate rap lyrics for each character, making sure the lyrics are relevant to the topic and appropriate for each character.
+         Format the lyrics as follows but do not read anything that is between '[]'.
+         mention funny and mean stuff about your opponents life and respond to previous vers when possible. :
+         Character 1:
+         [Verse 1]
+         ...
+         [Verse 2]
+         ...
+         Character 2:
+         [Verse 1] ...
+         [Verse 2] ...,
+         `,
     });
-
-    return llmResponse.output()!;
+    const { output } = await prompt(input);
+    return output!;
   }
 );
 
-const generateTtsAudioFlow = defineFlow(
+const generateTtsAudioFlow = ai.defineFlow(
   {
-    name: 'generateTtsAudio',
+    name: 'generateTtsAudioFlow',
     inputSchema: GenerateTtsAudioInputSchema,
-    outputSchema: z.string(),
+    outputSchema: GenerateTtsAudioOutputSchema,
   },
-  async ({lyrics, voiceId}) => {
-    const {media} = await googleAI.generateTextToSpeech({
-      model: 'gemini-2.5-flash-preview-tts',
-      text: lyrics,
-      voice: voiceId as any,
-      encoding: 'PCM',
+  async (input) => {
+    const prompt = `Speaker1: ${input.lyricsCharacter1}\n\nSpeaker2: ${input.lyricsCharacter2}`;
+    const { media } = await ai.generate({
+      model: 'googleai/gemini-2.5-flash-preview-tts',
+      config: {
+        responseModalities: ['AUDIO'],
+        speechConfig: {
+          multiSpeakerVoiceConfig: {
+            speakerVoiceConfigs: [
+              {
+                speaker: 'Speaker1',
+                voiceConfig: {
+                  prebuiltVoiceConfig: {
+                    voiceName: input.character1Voice,
+                  },
+                },
+              },
+              {
+                speaker: 'Speaker2',
+                voiceConfig: {
+                  prebuiltVoiceConfig: {
+                    voiceName: input.character2Voice,
+                  },
+                },
+              },
+            ],
+          },
+        },
+      },
+      prompt,
     });
-
     if (!media) {
-      throw new Error('No audio data returned from TTS service.');
+      throw new Error('TTS generation failed: no media returned.');
     }
-
     const audioBuffer = Buffer.from(
       media.url.substring(media.url.indexOf(',') + 1),
       'base64'
     );
     const wavBase64 = await toWav(audioBuffer);
-
-    return `data:audio/wav;base64,${wavBase64}`;
+    return {
+      audioDataUri: `data:audio/wav;base64,${wavBase64}`,
+    };
   }
 );
 
@@ -141,60 +165,64 @@ const generateTtsAudioFlow = defineFlow(
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const {character1Id, character2Id, topic} = body;
+    const {
+      character1Id,
+      character2Id,
+      topic,
+      numVerses,
+      character1Voice,
+      character2Voice,
+    } = body;
 
-    if (!character1Id || !character2Id || !topic) {
+    if (
+      !character1Id ||
+      !character2Id ||
+      !topic ||
+      !numVerses ||
+      !character1Voice ||
+      !character2Voice
+    ) {
       return NextResponse.json(
-        {error: 'Missing required fields'},
-        {status: 400}
+        { error: 'Missing required fields' },
+        { status: 400 }
       );
     }
 
-    const character1 = characters.find(c => c.id === character1Id);
-    const character2 = characters.find(c => c.id === character2Id);
+    const character1 = characters.find((c) => c.id === character1Id);
+    const character2 = characters.find((c) => c.id === character2Id);
 
     if (!character1 || !character2) {
       return NextResponse.json(
-        {error: 'One or both characters not found'},
-        {status: 404}
+        { error: 'One or both characters not found' },
+        { status: 404 }
       );
     }
 
     // Generate Lyrics
-    const lyrics = await generateRapLyricsFlow({
-      character1,
-      character2,
+    const lyricsInput: GenerateRapLyricsInput = {
+      character1: character1.name,
+      character2: character2.name,
       topic,
-    });
+      numVerses,
+    };
 
-    // Generate TTS for both characters in parallel
-    const [audio1, audio2] = await Promise.all([
-        generateTtsAudioFlow({ lyrics: lyrics.lyricsCharacter1, voiceId: character1.voiceId }),
-        generateTtsAudioFlow({ lyrics: lyrics.lyricsCharacter2, voiceId: character2.voiceId })
-    ]);
-    
-    // This is a simplified combination. A real app might do more sophisticated audio mixing.
-    // For now, we'll just send back one of the audio files, but in a real scenario, you'd combine them.
-    // A more advanced implementation would use a multi-speaker TTS flow if available or mix audio server-side.
-    
-    const combinedLyrics = `
-            Speaker 1: ${lyrics.lyricsCharacter1}
-            Speaker 2: ${lyrics.lyricsCharacter2}
-        `;
+    const lyricsResult = await generateRapLyricsFlow(lyricsInput);
 
-    const audioDataUri = await generateTtsAudioFlow({
-        lyrics: combinedLyrics,
-        voiceId: 'onyx', // A default voice for the combined track
-    });
+    // Generate Audio
+    const audioInput: GenerateTtsAudioInput = {
+      lyricsCharacter1: lyricsResult.lyricsCharacter1,
+      character1Voice,
+      lyricsCharacter2: lyricsResult.lyricsCharacter2,
+      character2Voice,
+    };
 
+    const audioResult = await generateTtsAudioFlow(audioInput);
 
-    return NextResponse.json({lyrics, audio: audioDataUri});
+    return NextResponse.json({ lyrics: lyricsResult, audio: audioResult });
   } catch (error: any) {
     console.error('API Route Error:', error);
     const errorMessage =
-      error.details?.message || 'An internal server error occurred.';
-    return NextResponse.json({error: errorMessage}, {status: 500});
+      error.message || 'An internal server error occurred.';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
-
-    

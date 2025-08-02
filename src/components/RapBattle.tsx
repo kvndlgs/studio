@@ -36,8 +36,13 @@ type GenerateRapLyricsOutput = {
 };
 
 type GenerateTtsAudioOutput = {
-  audio: string;
+  audioDataUri: string;
 };
+
+type ApiReponse = {
+  lyrics: GenerateRapLyricsOutput,
+  audio: GenerateTtsAudioOutput
+}
 
 const beats = [
     { id: 1, name: 'Shook Ones Pt, II', bpm: 92, image: '/img/shookones.png', hint: 'Legendary Battle Instrumental From Mobb', audioSrc: '/audio/shookones.mp3' },
@@ -66,7 +71,7 @@ export function RapBattle() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      topic: "",
+      topic: ""
     },
   });
 
@@ -97,12 +102,12 @@ export function RapBattle() {
   }, [selectedBeat]);
 
   useEffect(() => {
-    if (ttsAudio?.audio) {
+    if (ttsAudio?.audioDataUri) {
         if (vocalsAudioRef.current) {
             vocalsAudioRef.current.pause();
             vocalsAudioRef.current = null;
         }
-        const audio = new Audio(ttsAudio.audio);
+        const audio = new Audio(ttsAudio.audioDataUri);
         audio.addEventListener('ended', () => setIsVocalsPlaying(false));
         vocalsAudioRef.current = audio;
         setIsVocalsPlaying(false);
@@ -159,6 +164,9 @@ export function RapBattle() {
           character1Id: selectedCharacter.id,
           character2Id: selectedCharacter1.id,
           topic: data.topic,
+          numVerses: 2,
+          character1Voice: selectedCharacter.voiceId,
+          character2Voice: selectedCharacter1.voiceId,
         }),
       });
 
@@ -167,10 +175,10 @@ export function RapBattle() {
         throw new Error(errorData.error || `API error: ${response.statusText}`);
       }
 
-      const battleData = await response.json();
+      const battleData: ApiReponse = await response.json();
 
       setLyrics(battleData.lyrics);
-      setTtsAudio(battleData);
+      setTtsAudio(battleData.audio);
 
       toast({
         title: "Battle Generated!",
@@ -460,5 +468,3 @@ export function RapBattle() {
     </section>
   );
 }
-
-    
