@@ -1,3 +1,4 @@
+"use server"
 /**
  * @fileOverview A Text-to-Speech (TTS) generation flow for two speakers.
  *
@@ -6,9 +7,9 @@
  * - GenerateTtsAudioOutput - The return type for the generateTtsAudio function.
  */
 
-import {ai} from '../genkit';
-import {z} from 'genkit';
-import * as wav from 'wav';
+import {ai} from '@/ai/genkit';
+import {z} from 'zod';
+import wav from 'wav';
 
 const GenerateTtsAudioInputSchema = z.object({
   lyricsCharacter1: z.string().describe('The lyrics for the first character.'),

@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { auth } from '@/lib/firebase'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { z } from "zod";
-import { getFunctions, httpsCallable } from 'firebase/functions';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -13,12 +11,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Download, Share2, Music, MicVocal, Wand2, Play, Pause, AlertTriangle, Speaker } from "lucide-react";
 import Image from "next/image";
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Progress } from "./ui/progress";
+import { Character } from '@/types'
+import { characters } from '@/data/characters'
 import { CharacterCard } from "./CharacterCard";
-import { Skeleton } from "./ui/skeleton";
+import { functions } from "@/lib/firebase";
+import { httpsCallable } from "firebase/functions";
+
 
 const formSchema = z.object({
   topic: z
@@ -29,18 +30,6 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-// Types for Firebase function responses
-export type Character = {
-  id: string;
-  name: string;
-  image?: string;
-  faceoff?: string;
-  voiceId: string;
-  hint: string;
-  personality: string[];
-  catchPhrases: string[];
-  createdAt: Date;
-};
 
 type GenerateRapLyricsOutput = {
   lyricsCharacter1: string;
@@ -51,12 +40,6 @@ type GenerateTtsAudioOutput = {
   audioDataUri: string;
 };
 
-type RapBattleResult = {
-  battleId: string;
-  lyrics: GenerateRapLyricsOutput;
-  audio: string;
-};
-
 const beats = [
     { id: 1, name: 'Shook Ones Pt, II', bpm: 92, image: '/img/shookones.png', hint: 'Legendary Battle Instrumental From Mobb', audioSrc: '/audio/shookones.mp3' },
     { id: 2, name: 'Who Shot Ya', bpm: 90, image: '/img/whoshotya.png', hint: 'Biggie Vs. 2Pac', audioSrc: '/audio/whoshotya.mp3' },
@@ -65,19 +48,9 @@ const beats = [
     { id: 5, name: 'Family Matters', bpm: 82, image: '/img/familymatters.png', hint: 'Drake Vs. Kendrick Lamar', audioSrc: '/audio/familymatters.mp3'},
 ];
 
-// Initialize Firebase functions
-const functions = getFunctions();
-const generateRapBattle = httpsCallable<{
-  character1Id: string;
-  character2Id: string;
-  topic: string;
-  numVerses: number;
-}, RapBattleResult>(functions, 'generateRapBattle');
-
-const getCharacters = httpsCallable<{}, Character[]>(functions, 'getCharacters');
+const generateRapBattle = httpsCallable(functions, 'generateRapBattle');
 
 export function RapBattle() {
-  const [characters, setCharacters] = useState<Character[]>([]);
   const [charactersLoading, setCharactersLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState("");
@@ -85,7 +58,7 @@ export function RapBattle() {
   const [ttsAudio, setTtsAudio] = useState<GenerateTtsAudioOutput | null>(null);
   const [selectedBeat, setSelectedBeat] = useState(beats[0]);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
-  const [selectedCharacter1, setSelectedCharacter1] = useState<Character | null>(null);
+  const [selectedCharacter1, setSelectedCharacter1] = useState<Character| null>(null);
   const [isResultsVisible, setIsResultsVisible] = useState(false);
   const [isBeatPlaying, setIsBeatPlaying] = useState(false);
   const [isVocalsPlaying, setIsVocalsPlaying] = useState(false);
@@ -101,39 +74,6 @@ export function RapBattle() {
     },
   });
 
-  useEffect(() => {
-    const fetchCharacters = async () => {
-      try {
-        if (!auth.currentUser) {
-          console.error("User is not authenticated.");
-          return
-        }
-        const result = await getCharacters({});
-        console.log('Feteched Characters', result.data);
-        
-        const fetchedCharacters = result.data as Character[];
-        setCharacters(fetchedCharacters);
-
-        if(fetchedCharacters.length >= 2) {
-          setSelectedCharacter(fetchedCharacters[0]);
-          setSelectedCharacter1(fetchedCharacters[1]);
-        }
-      } catch (error) {
-        console.log('Failed to fetch those dumb fucking characters:', error);
-        toast({
-          variant: "destructive",
-          title: "Failed to load characters",
-          description: "Could not fetch characters from the database.",
-        });
-      } finally {
-         setCharactersLoading(false);
-      }
-    };
-    
-    fetchCharacters();
-    
-  }, [toast]);
-  
 
 
   useEffect(() => {
@@ -200,7 +140,6 @@ export function RapBattle() {
     setIsVocalsPlaying(!isVocalsPlaying);
   };
 
-  // Updated handleGenerate function to use Firebase functions
   const handleGenerate: SubmitHandler<FormValues> = async (data) => {
     if (!selectedCharacter || !selectedCharacter1) {
       toast({
@@ -214,11 +153,9 @@ export function RapBattle() {
     setIsLoading(true);
     setLyrics(null);
     setTtsAudio(null);
+    setLoadingStatus("Generating rap battle...");
     
     try {
-      setLoadingStatus("Generating mom's jokes...");
-      
-      // Call the Firebase function instead of direct AI calls
       const result = await generateRapBattle({
         character1Id: selectedCharacter.id,
         character2Id: selectedCharacter1.id,
@@ -226,9 +163,8 @@ export function RapBattle() {
         numVerses: 2,
       });
 
-      // Extract the data from Firebase function response
-      const battleData = result.data;
-      
+      const battleData = result.data as any;
+
       setLyrics(battleData.lyrics);
       setTtsAudio({ audioDataUri: battleData.audio });
 
@@ -310,7 +246,7 @@ export function RapBattle() {
                         <AlertTriangle className="h-4 w-4" />
                         <AlertTitle>Audio Error</AlertTitle>
                         <AlertDescription>
-                            Are you restarded? Please ensure it exists in the `/public/audio` directory.
+                            Could not load the beat. Please ensure it exists in the `/public/audio` directory.
                         </AlertDescription>
                     </Alert>
                 </div>
@@ -385,27 +321,27 @@ export function RapBattle() {
             <CardContent>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-8 p-4">
                 <div className="flex flex-col items-center justify-end">
-                    {charactersLoading ? <Skeleton className="w-3/4 h-48" /> : 
+
                         <img
                             src={selectedCharacter?.faceoff}
                             alt={selectedCharacter?.name}
                             data-ai-hint={selectedCharacter?.hint}
                             className="w-3/4"
                         />
-                    }
-                  <h3 className="text-xl font-bold font-headline mt-2">{charactersLoading ? <Skeleton className="h-8 w-32" /> : selectedCharacter?.name}</h3>
+                    
+                  <h3 className="text-xl font-bold font-headline mt-2"> {selectedCharacter?.name}</h3>
                 </div>
                 <div className="text-4xl font-bold text-muted-foreground font-headline mx-4">VS</div>
                 <div className="flex flex-col items-center justify-end">
-                    {charactersLoading ? <Skeleton className="w-3/4 h-48" /> :
+
                         <img
                             src={selectedCharacter1?.faceoff}
                             alt={selectedCharacter1?.name}
                             data-ai-hint={selectedCharacter1?.hint}
                             className="w-3/4"
                         />
-                    }
-                  <h3 className="text-xl font-bold font-headline mt-2">{charactersLoading ? <Skeleton className="h-8 w-32" /> : selectedCharacter1?.name}</h3>
+                    
+                  <h3 className="text-xl font-bold font-headline mt-2">{ selectedCharacter1?.name}</h3>
                 </div>
               </div>
             </CardContent>
@@ -413,7 +349,6 @@ export function RapBattle() {
 
           <div className="max-w-full container flex flex-col items-between gap-4">
             <h4 className="text-bold"> Pick a character </h4>
-            {charactersLoading ? <div className="w-full h-auto flex md:flex-wrap items-center justify-around gap-2"><Skeleton className="h-20 w-20 rounded-full" /><Skeleton className="h-20 w-20 rounded-full" /><Skeleton className="h-20 w-20 rounded-full" /><Skeleton className="h-20 w-20 rounded-full" /></div> : <div className="w-full h-auto flex md:flex-wrap items-center justify-around gap-2 cursor-pointer">
             {characters.map((character) => (
               <CharacterCard 
                 key={character.id} 
@@ -423,10 +358,10 @@ export function RapBattle() {
                 onClick={() => setSelectedCharacter(character)}
               />
             ))}
-            </div>}
+    
             <div className="w-full h-auto text-center"><h3>VS.</h3></div>
+
             <h4 className="font-bold"> Pick an opponent </h4>
-            {charactersLoading ? <div className="w-full h-auto flex md:flex-wrap items-center justify-around gap-2"><Skeleton className="h-20 w-20 rounded-full" /><Skeleton className="h-20 w-20 rounded-full" /><Skeleton className="h-20 w-20 rounded-full" /><Skeleton className="h-20 w-20 rounded-full" /></div> : <div className="w-full h-auto flex items-center justify-around gap-2 cursor-pointer">
             {characters.map((character) => (
                <CharacterCard 
                 key={character.id} 
@@ -436,7 +371,7 @@ export function RapBattle() {
                 onClick={() => setSelectedCharacter1(character)}
               />
             ))}
-            </div>}
+
           </div>
 
           <Card className="shadow-lg">
@@ -503,7 +438,7 @@ export function RapBattle() {
                 />
             </CardContent>
             <CardFooter>
-                 <Button type="submit" disabled={isLoading || charactersLoading || !selectedCharacter || !selectedCharacter1} size="lg" className="w-full text-white text-lg font-bold tracking-wide">
+                 <Button type="submit" disabled={isLoading || !selectedCharacter || !selectedCharacter1} size="lg" className="w-full text-white text-lg font-bold tracking-wide">
                     {isLoading ? (
                     <Loader2 className="mr-2 h-6 w-6 animate-spin" />
                     ) : (
