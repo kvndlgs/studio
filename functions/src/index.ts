@@ -2,33 +2,34 @@
 import { onCallGenkit } from 'firebase-functions/https';
 //import { functions } from 'firebase-functions';
 import { defineSecret } from 'firebase-functions/params';
-import { initializeApp } from 'firebase-admin/app';
+//import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import * as v2 from 'firebase-functions/v2';
 import { Character } from './types/index';
 import { generateRapLyricsFlow } from './ai/flows/generate-rap-lyrics';
 import { generateTtsAudioFlow } from './ai/flows/generate-tts-audio';
-import './ai/genkit';
+import * as admin from 'firebase-admin';
+
 
 
 const apiKey = defineSecret('GEMINI_API_KEY');
 
-initializeApp();
+admin.initializeApp();
+v2.setGlobalOptions({
+    secrets: [apiKey],
+    region: 'us-central1',
+});
+
 const db = getFirestore();
 
 // Fixed: Properly configure onCallGenkit functions
 export const generateRapLyrics = onCallGenkit({
-    secrets: [apiKey],
-    region: 'us-central1', // Add explicit region
 }, generateRapLyricsFlow);
 
 export const generateTtsAudio = onCallGenkit({
-    secrets: [apiKey],
-    region: 'us-central1', // Add explicit region
 }, generateTtsAudioFlow);
 
 export const getCharacters = v2.https.onCall({
-    region: 'us-central1'
 }, async (request) => {
   if (!request.auth) {
     throw new v2.https.HttpsError(
@@ -48,15 +49,7 @@ export const getCharacters = v2.https.onCall({
 });
 
 export const getCharacter = v2.https.onCall({
-    region: 'us-central1',
 }, async (request) => {
-  if (!request.auth) {
-    throw new v2.https.HttpsError(
-      'unauthenticated', 
-      'You must be authenticated to access this resource you peasant.'
-    );
-  }
-  console.log("Authenticated user's UID:", request.auth.uid);
   const { characterId } = request.data;
 
   const doc = await db.collection('characters').doc(characterId).get();
@@ -73,8 +66,6 @@ export const getCharacter = v2.https.onCall({
 
 
 export const generateRapBattle = v2.https.onCall({
-    region: 'us-central1',
-    secrets: [apiKey], // Add secrets here too
 }, async (request) => {
     const { character1Id, character2Id, topic, numVerses } = request.data;
     
@@ -120,8 +111,6 @@ export const generateRapBattle = v2.https.onCall({
 });
 
 export const testLyrics = v2.https.onRequest({
-    region: 'us-central1',
-    secrets: [apiKey],
 }, async (req, res) => {
     try {
       const result = await generateRapLyricsFlow({
@@ -139,8 +128,6 @@ export const testLyrics = v2.https.onRequest({
 });
   
 export const testAudio = v2.https.onRequest({
-    region: 'us-central1',
-    secrets: [apiKey],
 }, async (req, res) => {
     try {
       const result = await generateTtsAudioFlow({

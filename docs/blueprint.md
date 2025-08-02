@@ -2,8 +2,10 @@
 
 ## Core Features:
 
-- Lyrics Generation: Generate rap lyrics for Peter Griffin and Shrek using genkit as a tool; option to select other APIs.
-- Voice Synthesis: Synthesize vocals for both characters, choosing their respective voices, using genkit.
+- Lyrics Generation: Generate rap lyrics for Peter Griffin and Shrek,
+Realistic Fish Head and Bender using genkit as a tool; option to select other APIs.
+- Uses Firebase functions with onGenkitCall to provide API'S endpoint that will be fetched with my vitejs frontend. 
+- Voice Synthesis: Synthesize vocals for characters, choosing their respective voices, using genkit.
 - Beat Selection: Provide pre-selected instrumental beats for the rap battle.
 - Beat Sync: Synchronize generated vocals with the selected instrumental beat, at the correct BPM.
 - Download Battle: Allow users to download the completed rap battle.

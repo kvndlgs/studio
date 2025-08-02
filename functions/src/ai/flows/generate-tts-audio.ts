@@ -8,7 +8,7 @@
 
 import {ai} from '../genkit';
 import {z} from 'genkit';
-import wav from 'wav';
+import * as wav from 'wav';
 
 const GenerateTtsAudioInputSchema = z.object({
   lyricsCharacter1: z.string().describe('The lyrics for the first character.'),

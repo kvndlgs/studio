@@ -7,7 +7,7 @@
  */
 
 import {ai} from '../genkit';
-import {z} from 'genkit';
+import * as z from 'zod';
 
 const GenerateRapLyricsInputSchema = z.object({
   character1: z.string().describe('The name of the first character.'),
