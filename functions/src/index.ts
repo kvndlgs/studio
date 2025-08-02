@@ -206,7 +206,8 @@ export const generateRapBattle = https.onCall(
     region: 'us-central1',
   },
   async request => {
-    const {character1Id, character2Id, topic, numVerses} = request.data;
+    const {character1Id, character2Id, topic} = request.data;
+    const numVerses = 2;
 
     // Fetch characters from Firestore
     const [char1Doc, char2Doc] = await Promise.all([
@@ -214,14 +215,13 @@ export const generateRapBattle = https.onCall(
       db.collection('characters').doc(character2Id).get(),
     ]);
 
+    if (!char1Doc.exists || !char2Doc.exists) {
+      throw new https.HttpsError('not-found', 'One or both characters not found.');
+    }
+
     const character1 = {id: char1Doc.id, ...char1Doc.data()} as Character;
     const character2 = {id: char2Doc.id, ...char2Doc.data()} as Character;
 
-    // Note: Calling Genkit flows directly within an onCall function might lead to
-    // timeouts if the flows are long-running. For production, consider triggering
-    // these flows via a task queue (e.g., Cloud Tasks) or implementing a
-    // polling mechanism on the client-side.
-    // Generate lyrics using your existing flow
     const lyricsResult = await generateRapLyricsFlow({
       character1: character1.name,
       character2: character2.name,
@@ -229,7 +229,6 @@ export const generateRapBattle = https.onCall(
       numVerses,
     });
 
-    // Generate audio using your existing flow
     const audioResult = await generateTtsAudioFlow({
       lyricsCharacter1: lyricsResult.lyricsCharacter1,
       character1Voice: character1.voiceId,
@@ -237,7 +236,6 @@ export const generateRapBattle = https.onCall(
       character2Voice: character2.voiceId,
     });
 
-    // Save battle to Firestore
     const battleRef = await db.collection('battles').add({
       participants: [character1Id, character2Id],
       topic,
@@ -252,4 +250,16 @@ export const generateRapBattle = https.onCall(
       audio: audioResult.audioDataUri,
     };
   }
+);
+
+export const getCharacters = https.onCall(
+    {
+        secrets: [apiKey],
+        region: "us-central1",
+    },
+    async (request) => {
+        const snapshot = await db.collection("characters").get();
+        const characters = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        return { characters };
+    }
 );

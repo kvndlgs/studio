@@ -15,10 +15,11 @@ import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Progress } from "./ui/progress";
 import { Character } from '@/types'
-import { characters } from '@/data/characters'
+import { characters as localCharacters } from '@/data/characters'
 import { CharacterCard } from "./CharacterCard";
-import { functions } from "@/lib/firebase";
-import { httpsCallable } from "firebase/functions";
+import { db } from "@/lib/firebase";
+import { collection, getDocs } from "firebase/firestore";
+import { Skeleton } from "./ui/skeleton";
 
 
 const formSchema = z.object({
@@ -48,9 +49,8 @@ const beats = [
     { id: 5, name: 'Family Matters', bpm: 82, image: '/img/familymatters.png', hint: 'Drake Vs. Kendrick Lamar', audioSrc: '/audio/familymatters.mp3'},
 ];
 
-const generateRapBattle = httpsCallable(functions, 'generateRapBattle');
-
 export function RapBattle() {
+  const [characters, setCharacters] = useState<Character[]>([]);
   const [charactersLoading, setCharactersLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState("");
@@ -74,6 +74,27 @@ export function RapBattle() {
     },
   });
 
+  useEffect(() => {
+    const fetchCharacters = async () => {
+      setCharactersLoading(true);
+      try {
+        const querySnapshot = await getDocs(collection(db, "characters"));
+        const chars = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Character));
+        setCharacters(chars);
+      } catch (error) {
+        console.error("Error fetching characters from Firestore:", error);
+        toast({
+          variant: "destructive",
+          title: "Failed to load characters",
+          description: "Could not fetch character data. Using local fallback.",
+        });
+        setCharacters(localCharacters);
+      } finally {
+        setCharactersLoading(false);
+      }
+    };
+    fetchCharacters();
+  }, [toast]);
 
 
   useEffect(() => {
@@ -156,14 +177,23 @@ export function RapBattle() {
     setLoadingStatus("Generating rap battle...");
     
     try {
-      const result = await generateRapBattle({
-        character1Id: selectedCharacter.id,
-        character2Id: selectedCharacter1.id,
-        topic: data.topic,
-        numVerses: 2,
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          character1Id: selectedCharacter.id,
+          character2Id: selectedCharacter1.id,
+          topic: data.topic,
+        }),
       });
 
-      const battleData = result.data as any;
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+
+      const battleData = await response.json();
 
       setLyrics(battleData.lyrics);
       setTtsAudio({ audioDataUri: battleData.audio });
@@ -349,7 +379,14 @@ export function RapBattle() {
 
           <div className="max-w-full container flex flex-col items-between gap-4">
             <h4 className="text-bold"> Pick a character </h4>
-            {characters.map((character) => (
+             {charactersLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-24 w-full" />
+              </div>
+          ) : (
+            characters.map((character) => (
               <CharacterCard 
                 key={character.id} 
                 character={character} 
@@ -357,12 +394,20 @@ export function RapBattle() {
                 disabled={isLoading}
                 onClick={() => setSelectedCharacter(character)}
               />
-            ))}
+            ))
+          )}
     
             <div className="w-full h-auto text-center"><h3>VS.</h3></div>
 
             <h4 className="font-bold"> Pick an opponent </h4>
-            {characters.map((character) => (
+             {charactersLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-24 w-full" />
+              </div>
+          ) : (
+            characters.map((character) => (
                <CharacterCard 
                 key={character.id} 
                 character={character} 
@@ -370,7 +415,8 @@ export function RapBattle() {
                 disabled={isLoading || character.id === selectedCharacter?.id}
                 onClick={() => setSelectedCharacter1(character)}
               />
-            ))}
+            ))
+          )}
 
           </div>
 
