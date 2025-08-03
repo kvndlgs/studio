@@ -13,15 +13,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import Image from 'next/image';
 
 export function Header() {
   const { user, signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <img src='/img/logo.png' alt='suckerpunch' className="w-[160px]" />
+      <div className="container flex h-16 py-4 max-w-screen-2xl items-center justify-between">
+        <Link href="/" className="flex items-center justify-center">
+          <Image src='/img/logo.png' alt='suckerpunch' width={175} height={175} />
         </Link>
         <div className="flex items-center gap-2">
           {user ? (

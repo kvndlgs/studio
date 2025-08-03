@@ -3,6 +3,7 @@ export interface Character {
     name: string;
     image: string;
     faceoff?: string;
+    shadow?: string;
     hint: string;
     voiceId: string;
     personality: string[];
