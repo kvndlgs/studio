@@ -27,3 +27,15 @@ export interface Battle {
     instrumental_id: string;
     created_at: string;
 }
+
+export interface Judge {
+    id: string;
+    name: string;
+    voiceId: string;
+    image: string;
+    hint: string;
+    personality: string[];
+    catchPhrases: string[];
+    createdAt: Date;
+}
+

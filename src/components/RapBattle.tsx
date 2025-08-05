@@ -19,6 +19,7 @@ import { Progress } from "./ui/progress";
 import { Character } from '@/types'
 import { CharacterCard } from "./CharacterCard";
 import { characters } from "@/data/characters";
+import { judges } from "@/data/panel";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 
@@ -63,10 +64,6 @@ const beats = [
     { id: 5, name: 'Family Matters', bpm: 82, image: '/img/familymatters.png', hint: 'Drake Vs. Kendrick Lamar', audioSrc: '/audio/familymatters.mp3'},
 ];
 
-const judges = [
-    { id: 1, name: "DJ Roast", image: "https://i.imgur.com/vHqV5tV.png" },
-    { id: 2, name: "MC Flow", image: "https://i.imgur.com/k9Hxs2W.png" },
-]
 
 export function RapBattle() {
   const [isLoading, setIsLoading] = useState(false);
@@ -338,7 +335,8 @@ export function RapBattle() {
                     {winner.winnerName}!
                 </CardDescription>
             </CardHeader>
-            <CardContent className="grid md:grid-cols-2 gap-8 pt-6">
+=
+            <CardContent  className="grid md:grid-cols-2 gap-8 pt-6">
                 <div className="flex flex-col items-center text-center">
                     <Avatar className="w-24 h-24 mb-4 border-4 border-secondary">
                         <AvatarImage src={judges[0].image} alt={judges[0].name} />
@@ -356,6 +354,7 @@ export function RapBattle() {
                     <p className="text-muted-foreground mt-2 italic">"{winner.judge2Comment}"</p>
                 </div>
             </CardContent>
+   
         </Card>
 
 
