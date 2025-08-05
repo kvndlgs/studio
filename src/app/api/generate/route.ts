@@ -1,8 +1,8 @@
-
 'use server';
 
 import { ai } from '@/app/api/generate/genkit';
 import { characters } from '@/data/characters';
+import { judges } from '@/data/panel';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import wav from 'wav';
@@ -46,6 +46,26 @@ const GenerateTtsAudioOutputSchema = z.object({
       "The generated audio as a data URI. Expected format: 'data:audio/wav;base64,<encoded_data>'."
     ),
 });
+
+const JudgeCommentarySchema = z.object({
+    judgeName: z.string().describe("The name of the judge."),
+    commentary: z.string().describe("The judge's commentary on the rap battle.")
+});
+
+const DetermineWinnerInputSchema = z.object({
+    character1: z.string().describe("The name of the first character."),
+    character2: z.string().describe("The name of the second character."),
+    lyricsCharacter1: z.string().describe("The lyrics of the first character."),
+    lyricsCharacter2: z.string().describe("The lyrics of the second character."),
+});
+type DetermineWinnerInput = z.infer<typeof DetermineWinnerInputSchema>;
+
+
+const DetermineWinnerOutputSchema = z.object({
+    winner: z.string().describe("The name of the character who won the rap battle."),
+    judges: z.array(JudgeCommentarySchema).describe("An array of commentaries from the judges.")
+});
+
 
 // Helper function
 async function toWav(
@@ -159,6 +179,52 @@ const generateTtsAudioFlow = ai.defineFlow(
   }
 );
 
+const determineWinnerFlow = ai.defineFlow(
+    {
+        name: "determineWinnerFlow",
+        inputSchema: DetermineWinnerInputSchema,
+        outputSchema: DetermineWinnerOutputSchema,
+    },
+    async (input) => {
+        const judge1 = judges[0];
+        const judge2 = judges[1];
+
+        const prompt = ai.definePrompt({
+            name: "determineWinnerPrompt",
+            input: { schema: DetermineWinnerInputSchema },
+            output: { schema: DetermineWinnerOutputSchema },
+            prompt: `You are a panel of two judges at a rap battle.
+Your names are ${judge1.name} and ${judge2.name}.
+Your personalities are as follows:
+- ${judge1.name}: ${judge1.personality.join(', ')}. Favorite phrases: ${judge1.catchPhrases.join(', ')}.
+- ${judge2.name}: ${judge2.personality.join(', ')}. Favorite phrases: ${judge2.catchPhrases.join(', ')}.
+
+Two characters, ${input.character1} and ${input.character2}, have just had a rap battle.
+Here are their lyrics:
+
+Lyrics for ${input.character1}:
+---
+${input.lyricsCharacter1}
+---
+
+Lyrics for ${input.character2}:
+---
+${input.lyricsCharacter2}
+---
+
+As the judges, you must now determine a winner based on punchlines, techniques, rhyme scheme, and overall madness.
+Analyze the battle based on punchlines, clever techniques, rhyme scheme, and overall madness.
+Your commentary should reflect your defined personalities. Be critical, funny, and opinionated.
+
+Provide your verdict in the requested JSON format, with a commentary from each judge and the name of the winner.`
+        });
+
+        const { output } = await prompt(input);
+        return output!;
+    }
+);
+
+
 // Main handler for the API route
 export async function POST(req: Request) {
   try {
@@ -204,21 +270,35 @@ export async function POST(req: Request) {
       numVerses,
     };
     const lyricsResult = await generateRapLyricsFlow(lyricsInput);
+    
+    // Concurrently generate audio and determine winner
+    const [audioResult, winnerResult] = await Promise.all([
+        generateTtsAudioFlow({
+            lyricsCharacter1: lyricsResult.lyricsCharacter1,
+            character1Voice,
+            lyricsCharacter2: lyricsResult.lyricsCharacter2,
+            character2Voice,
+        }),
+        determineWinnerFlow({
+            character1: character1.name,
+            character2: character2.name,
+            lyricsCharacter1: lyricsResult.lyricsCharacter1,
+            lyricsCharacter2: lyricsResult.lyricsCharacter2,
+        }),
+    ]);
 
-    // Generate Audio
-    const audioInput: GenerateTtsAudioInput = {
-      lyricsCharacter1: lyricsResult.lyricsCharacter1,
-      character1Voice,
-      lyricsCharacter2: lyricsResult.lyricsCharacter2,
-      character2Voice,
-    };
-    const audioResult = await generateTtsAudioFlow(audioInput);
 
-    return NextResponse.json({ lyrics: lyricsResult, audio: audioResult });
+    return NextResponse.json({ 
+        lyrics: lyricsResult, 
+        audio: audioResult,
+        winner: winnerResult.winner,
+        judges: winnerResult.judges
+    });
+
   } catch (error: any) {
     console.error('API Route Error:', error);
     const errorMessage =
       error.message || 'An internal server error occurred.';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
-}
+};

@@ -10,15 +10,17 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Download, Share2, Music, MicVocal, Wand2, Play, Pause, AlertTriangle, Speaker } from "lucide-react";
+import { Loader2, Download, Share2, Music, MicVocal, Wand2, Play, Pause, AlertTriangle, Speaker, Gavel, Award } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "./ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Progress } from "./ui/progress";
-import { Character } from '@/types'
+import { Character, Judge } from '@/types'
 import { CharacterCard } from '@/components/CharacterCard'
 import { characters } from "@/data/characters";
+import { judges as judgesData } from "@/data/panel";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 
 const formSchema = z.object({
@@ -40,10 +42,16 @@ type GenerateTtsAudioOutput = {
   audioDataUri: string;
 };
 
+type JudgeCommentary = {
+    judgeName: string;
+    commentary: string;
+}
+
 type ApiReponse = {
   lyrics: GenerateRapLyricsOutput,
   audio: GenerateTtsAudioOutput,
   winner?: string;
+  judges?: JudgeCommentary[];
 }
 
 const beats = [
@@ -71,7 +79,7 @@ export function RapBattle() {
   const vocalsAudioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
   const [winner, setWinner] = useState<string | null>(null);
-
+  const [judges, setJudges] = useState<JudgeCommentary[] | null>(null);
 
 
   const form = useForm<FormValues>({
@@ -162,6 +170,7 @@ export function RapBattle() {
     setLyrics(null);
     setTtsAudio(null);
     setWinner(null);
+    setJudges(null);
     setLoadingStatus("Generating rap battle...");
 
     try {
@@ -195,6 +204,9 @@ export function RapBattle() {
       if(battleData.winner) {
           setWinner(battleData.winner);
       }
+      if(battleData.judges) {
+          setJudges(battleData.judges);
+      }
 
       toast({
         title: "Battle Generated!",
@@ -227,6 +239,7 @@ export function RapBattle() {
     setIsBeatPlaying(false);
     setIsVocalsPlaying(false);
     setWinner(null);
+    setJudges(null);
   }
 
   const WinnerDisplay = () => {
@@ -235,21 +248,57 @@ export function RapBattle() {
     const winnerChar = characters.find(c => c.name === winner);
 
     return(
-        <Card className="mt-8 shadow-2xl overflow-hidden bg-gradient-to-tr from-primary/80 to-primary">
-            <CardHeader className="text-center">
-                 <CardTitle className="text-4xl font-bold font-headline tracking-tighter text-primary-foreground drop-shadow-lg">
+        <Card className="mt-8 shadow-2xl overflow-hidden bg-gradient-to-tr from-amber-400 via-yellow-500 to-amber-500 text-gray-900">
+            <CardHeader className="text-center pb-2">
+                 <CardTitle className="text-4xl font-bold font-headline tracking-tighter drop-shadow-lg flex items-center justify-center gap-3">
+                    <Award className="h-10 w-10 text-yellow-700" />
                     THE WINNER IS...
                 </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center text-center text-primary-foreground">
+            <CardContent className="flex flex-col items-center justify-center text-center">
                 {winnerChar && (
-                    <Image src={winnerChar.faceoff || ''} alt={winnerChar.name} width={200} height={200} className="rounded-full border-4 border-primary-foreground shadow-2xl mb-4" />
+                    <Image src={winnerChar.faceoff || ''} alt={winnerChar.name} width={200} height={200} className="rounded-full border-4 border-yellow-300 shadow-2xl mb-4" />
                 )}
-                <h3 className="text-5xl font-bold font-headline drop-shadow-md">{winner}</h3>
+                <h3 className="text-6xl font-bold font-headline drop-shadow-md">{winner}</h3>
             </CardContent>
         </Card>
     )
   }
+
+  const JudgesPanel = () => {
+    if (!judges) return null;
+
+    return (
+        <Card className="mt-8 shadow-2xl">
+            <CardHeader className="text-center">
+                <CardTitle className="text-3xl font-bold font-headline tracking-tighter flex items-center justify-center gap-3">
+                    <Gavel className="h-8 w-8 text-primary" />
+                    Judges' Panel
+                </CardTitle>
+                <CardDescription>The official verdict is in.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid md:grid-cols-2 gap-6">
+                {judges.map((judge, index) => {
+                    const judgeInfo = judgesData.find(j => j.name === judge.judgeName);
+                    return (
+                        <div key={index} className="flex flex-col items-center text-center gap-4 p-4 rounded-lg bg-muted/50">
+                            {judgeInfo && (
+                                <Avatar className="w-24 h-24 border-4 border-primary">
+                                    <AvatarImage src={judgeInfo.image} alt={judgeInfo.name} className="object-cover" />
+                                    <AvatarFallback>{judgeInfo.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                            )}
+                            <h4 className="text-xl font-headline font-bold">{judge.judgeName}</h4>
+                            <blockquote className="prose prose-sm dark:prose-invert italic text-muted-foreground border-l-4 border-border pl-4">
+                                "{judge.commentary}"
+                            </blockquote>
+                        </div>
+                    );
+                })}
+            </CardContent>
+        </Card>
+    );
+  };
 
 
   if (lyrics) {
@@ -266,6 +315,8 @@ export function RapBattle() {
         </div>
 
         {winner && <WinnerDisplay />}
+        {judges && <JudgesPanel />}
+
 
         <Card className="my-8 shadow-2xl overflow-hidden">
             <div className="p-4 md:p-6 bg-muted/30 flex flex-col sm:flex-row gap-4 sm:gap-6 items-center justify-between">
