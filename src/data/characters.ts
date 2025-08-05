@@ -10,7 +10,7 @@ export const characters: Character[] = [
     hint: 'family guy',
     voiceId: 'puck',
     personality: ['Obnoxious', 'impulsive', 'immature', 'loud-mouthed'],
-    catchPharases: ['Hehehehe', "Freakin' sweet!", 'Giggity giggity goo'],
+    catchPhrases: ['Hehehehe', "Freakin' sweet!", 'Giggity giggity goo'],
     createdAt: new Date(),
   },
   {
@@ -22,7 +22,7 @@ export const characters: Character[] = [
     hint: 'You are Shrek. from ,the movie Shrek',
     voiceId: 'puck',
     personality: ['grumpy', 'loner', 'territorial', 'cynical but good-hearted'],
-    catchPharases: ["What are you doin' in my swamp?!", "Onions have layers.", "Ogres are like onions."],
+    catchPhrases: ["What are you doin' in my swamp?!", "Onions have layers.", "Ogres are like onions."],
     createdAt: new Date(),
   },
   {
@@ -34,7 +34,7 @@ export const characters: Character[] = [
     hint: "You are Shaggy, Scooby Doo's best friend",
     voiceId: 'puck',
     personality: ['Coward', 'Laid-back', 'Clever'],
-    catchPharases: ["Like, Zoiinks!", "Like, what's happening?", "I'll warn you I'm feeling like a pretty powerful dude!"],
+    catchPhrases: ["Like, Zoiinks!", "Like, what's happening?", "I'll warn you I'm feeling like a pretty powerful dude!"],
     createdAt: new Date(),
   },
   {
@@ -46,7 +46,7 @@ export const characters: Character[] = [
     hint: 'You are Realistic Fish Head. The news anchor from Bikini Bottom',
     voiceId: 'puck',
     personality: ['Dramatic', 'Dead-serious', 'Volatile', 'Off-context'],
-    catchPharases: ["BREAKING NEWS", "We interrupt this program.", "we never dropped on the deck and flopped like a fish!"],
+    catchPhrases: ["BREAKING NEWS", "We interrupt this program.", "we never dropped on the deck and flopped like a fish!"],
     createdAt: new Date(),
   },
   {
@@ -58,7 +58,7 @@ export const characters: Character[] = [
     hint: 'You are Bender from Futurama',
     voiceId: 'puck',
     personality: ['Vulgar', 'Narcissistic', 'Abusive', 'Funny'],
-    catchPharases: ["Shut up, babe. I knew it.", "Bite my shiny metal ass!", "I'm so embarrassed, I wish everyone else were dead!"],
+    catchPhrases: ["Shut up, babe. I knew it.", "Bite my shiny metal ass!", "I'm so embarrassed, I wish everyone else were dead!"],
     createdAt: new Date(),
   },
   {
@@ -70,7 +70,7 @@ export const characters: Character[] = [
     shadow: "https://i.imgur.com/F7KbwQH.png",
     hint: "You are Parappa The rapper from the PS1 game",
     personality: ["Upbeat", "Cheerful", "Annoying"],
-    catchPharases: ["When i say BOOM BOOM BOOM! You say BAM BAM BAM!", "No pause in between, come on, let's jam!", "My style is rich, dope, phat in which... we'll make a cake"],
+    catchPhrases: ["When i say BOOM BOOM BOOM! You say BAM BAM BAM!", "No pause in between, come on, let's jam!", "My style is rich, dope, phat in which... we'll make a cake"],
     createdAt: new Date(),
   },
   {
@@ -82,7 +82,7 @@ export const characters: Character[] = [
     shadow: "https://i.imgur.com/PpujiOx.png",
     hint: "You are Batman from the 1960 TV Serie",
     personality: ["Just", "Heroic", "Cringy"],
-    catchPharases: ["To the Batmobile"],
+    catchPhrases: ["To the Batmobile"],
     createdAt: new Date(),
   },
   {
@@ -94,7 +94,7 @@ export const characters: Character[] = [
     shadow: "https://i.imgur.com/nbjQf7n.png",
     hint: "You are Hagrid from the PS2 game",
     personality: ["Gentle", "Polite", "Wise"],
-    catchPharases: ["Not all wizards are good", "I shouldn't have said that.", "Never insult Albus Dumbledore in front of me."],
+    catchPhrases: ["Not all wizards are good", "I shouldn't have said that.", "Never insult Albus Dumbledore in front of me."],
     createdAt: new Date(),
   }
 ];

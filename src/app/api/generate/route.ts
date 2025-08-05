@@ -109,6 +109,10 @@ const generateRapLyricsFlow = ai.defineFlow(
          Character 1: {{{character1}}}
          Character 2: {{{character2}}}
          Topic: {{{topic}}}
+         each characters personalities are as follow, added to their original character: {{{character1.personality}}}
+         each characters catch phrases are as follow, added to their original character: {{{character1.catchPhrases}}}
+         each characters personalities are as follow, added to their original character: {{{character2.personality}}}
+         each characters catch phrases are as follow, added to their original character: {{{character2.catchPhrases}}}
          Number of verses per character: {{{numVerses}}}
          Generate rap lyrics for each character, making sure the lyrics are relevant to the topic and appropriate for each character.
          Format the lyrics as follows but do not read anything that is between '[]'.

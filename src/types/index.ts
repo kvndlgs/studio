@@ -7,7 +7,18 @@ export interface Character {
     hint: string;
     voiceId: string;
     personality: string[];
-    catchPharases: string[];
+    catchPhrases: string[];
+    createdAt: Date;
+}
+
+export interface AnimatorProps {
+    id: string;
+    name: string;
+    image: string;
+    hint: string;
+    voiceId: string;
+    personality: string[];
+    catchPhrases: string[];
     createdAt: Date;
 }
 
