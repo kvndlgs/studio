@@ -17,7 +17,7 @@ import { Skeleton } from "./ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Progress } from "./ui/progress";
 import { Character } from '@/types'
-import { CharacterCard } from "./CharacterCard";
+import { CharacterCard } from '@/components/CharacterCard'
 import { characters } from "@/data/characters";
 
 
@@ -42,7 +42,8 @@ type GenerateTtsAudioOutput = {
 
 type ApiReponse = {
   lyrics: GenerateRapLyricsOutput,
-  audio: GenerateTtsAudioOutput
+  audio: GenerateTtsAudioOutput,
+  winner?: string;
 }
 
 const beats = [
@@ -69,6 +70,7 @@ export function RapBattle() {
   const beatAudioRef = useRef<HTMLAudioElement | null>(null);
   const vocalsAudioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
+  const [winner, setWinner] = useState<string | null>(null);
 
 
 
@@ -159,9 +161,11 @@ export function RapBattle() {
     setIsLoading(true);
     setLyrics(null);
     setTtsAudio(null);
+    setWinner(null);
     setLoadingStatus("Generating rap battle...");
 
     try {
+      setLoadingStatus("Generating savage lyrics...");
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
@@ -183,8 +187,14 @@ export function RapBattle() {
       }
 
       const battleData: ApiReponse = await response.json();
+
+      setLoadingStatus("Synthesizing trash talk...");
       setLyrics(battleData.lyrics);
       setTtsAudio(battleData.audio);
+
+      if(battleData.winner) {
+          setWinner(battleData.winner);
+      }
 
       toast({
         title: "Battle Generated!",
@@ -216,7 +226,31 @@ export function RapBattle() {
     }
     setIsBeatPlaying(false);
     setIsVocalsPlaying(false);
+    setWinner(null);
   }
+
+  const WinnerDisplay = () => {
+    if(!winner) return null;
+
+    const winnerChar = characters.find(c => c.name === winner);
+
+    return(
+        <Card className="mt-8 shadow-2xl overflow-hidden bg-gradient-to-tr from-primary/80 to-primary">
+            <CardHeader className="text-center">
+                 <CardTitle className="text-4xl font-bold font-headline tracking-tighter text-primary-foreground drop-shadow-lg">
+                    THE WINNER IS...
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center justify-center text-center text-primary-foreground">
+                {winnerChar && (
+                    <Image src={winnerChar.faceoff || ''} alt={winnerChar.name} width={200} height={200} className="rounded-full border-4 border-primary-foreground shadow-2xl mb-4" />
+                )}
+                <h3 className="text-5xl font-bold font-headline drop-shadow-md">{winner}</h3>
+            </CardContent>
+        </Card>
+    )
+  }
+
 
   if (lyrics) {
     return (
@@ -231,7 +265,9 @@ export function RapBattle() {
           </p>
         </div>
 
-        <Card className="mb-8 shadow-2xl overflow-hidden">
+        {winner && <WinnerDisplay />}
+
+        <Card className="my-8 shadow-2xl overflow-hidden">
             <div className="p-4 md:p-6 bg-muted/30 flex flex-col sm:flex-row gap-4 sm:gap-6 items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Image src={selectedBeat.image} alt={selectedBeat.name} width={80} height={80} className="rounded-lg shadow-md aspect-square object-cover" data-ai-hint={selectedBeat.hint} />
@@ -294,9 +330,9 @@ export function RapBattle() {
             <Card className="transform transition-transform duration-500 hover:scale-105 hover:shadow-2xl">
                 <CardHeader className="flex-row items-center gap-4">
                   <div>
-                    <img 
-                    src={selectedCharacter1?.faceoff} 
-                    alt={selectedCharacter1?.name} 
+                    <img
+                    src={selectedCharacter1?.faceoff}
+                    alt={selectedCharacter1?.name}
                     />
                   </div>
                  <CardTitle className="text-2xl font-headline">{selectedCharacter1?.name}</CardTitle>
@@ -342,7 +378,7 @@ export function RapBattle() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-8 p-4">
                 <div className="flex flex-col items-center justify-end">
                 <div className="flex items-center justify-center p-4 max-w-1/2">
-                  { 
+                  {
                       selectedCharacter ? (
                         <img
                             src={selectedCharacter?.faceoff}
@@ -350,14 +386,14 @@ export function RapBattle() {
                             data-ai-hint={selectedCharacter?.hint}
                             className="w-1/2 h-auto"
                         />
-                  ) : (  
-                       <Image 
-                          src="/img/shaggy_shadow.png" 
+                  ) : (
+                       <Image
+                          src="/img/shaggy_shadow.png"
                           alt="shaggy"
                           width={300}
                           height={400}
                         />
-                    
+
                   )
                 }
                 </div>
@@ -373,10 +409,10 @@ export function RapBattle() {
                             alt={selectedCharacter1?.name}
                             data-ai-hint={selectedCharacter1?.hint}
                             className="w-1/2 h-auto"
-                        /> 
+                        />
                   ): (
-                    <Image 
-                        src="/img/bender_shadow.png" 
+                    <Image
+                        src="/img/bender_shadow.png"
                         alt="bender"
                         width={300}
                         height={400}

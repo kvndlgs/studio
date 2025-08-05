@@ -138,7 +138,7 @@ const generateTtsAudioFlow = ai.defineFlow(
                     voiceName: input.character2Voice,
                   },
                 },
-              },
+              }
             ],
           },
         },
@@ -158,7 +158,6 @@ const generateTtsAudioFlow = ai.defineFlow(
     };
   }
 );
-
 
 // Main handler for the API route
 export async function POST(req: Request) {
