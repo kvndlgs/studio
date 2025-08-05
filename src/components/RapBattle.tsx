@@ -48,6 +48,8 @@ import { characters } from "@/data/characters";
 import { judges as judgesData } from "@/data/panel";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Loader } from "@/components/Loader";
+import ShareBattle from '@/components/ShareBattle';
+import { useCreateBattle } from "@/hooks/use-battle";
 
 const formSchema = z.object({
   topic: z
@@ -159,6 +161,9 @@ export function RapBattle() {
   const [winner, setWinner] = useState<string | null>(null);
   const [judges, setJudges] = useState<JudgeCommentary[] | null>(null);
 
+
+
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -195,6 +200,7 @@ export function RapBattle() {
     };
   }, [selectedBeat]);
 
+
   useEffect(() => {
     if (ttsAudio?.audioDataUri) {
       if (vocalsAudioRef.current) {
@@ -211,7 +217,7 @@ export function RapBattle() {
       };
     }
   }, [ttsAudio]);
-/** 
+  /** 
   const toggleBeatPlayback = () => {
     if (audioError || !beatAudioRef.current) return;
     if (isBeatPlaying) {
@@ -233,9 +239,11 @@ export function RapBattle() {
     setIsVocalsPlaying(!isVocalsPlaying);
   };
 */
+
+
   const handleTogglePlayback = () => {
     if (audioError || !beatAudioRef.current) return;
-    
+
     if (isBeatPlaying) {
       // Stop both beat and vocals
       beatAudioRef.current.pause();
@@ -249,14 +257,18 @@ export function RapBattle() {
       // Start beat immediately
       beatAudioRef.current.play().catch(() => setAudioError(true));
       setIsBeatPlaying(true);
-      
-      // Start vocals after delay
+
+      // Start vocals/lyrics after delay
       setTimeout(() => {
-        if (vocalsAudioRef.current && beatAudioRef.current && !beatAudioRef.current.paused) {
+        if (
+          vocalsAudioRef.current &&
+          beatAudioRef.current &&
+          !beatAudioRef.current.paused
+        ) {
           vocalsAudioRef.current.play().catch(console.error);
           setIsVocalsPlaying(true);
         }
-      }, 500); // 500ms delay - adjust as needed
+      }, 500); // Delay for vocals to come in after beat
     }
   };
 
@@ -453,25 +465,9 @@ export function RapBattle() {
             </div>
 
             <div className="flex items-center gap-4">
-
-                <Button 
-                     onClick={handleTogglePlayback}
-                     disabled={!ttsAudio || audioError}
-                >
-                  {isBeatPlaying ? (
-                    <Pause className="w-10 h-10" />
-                  ) : (
-                    <Play className="w-10 h-10 ml-1" />
-                  )}
-                </Button>
-              
-            {/** 
               <Button
-                size="lg"
-                className="rounded-full w-20 h-20"
-                aria-label="Play Beat"
-                onClick={toggleBeatPlayback}
-                disabled={audioError}
+                onClick={handleTogglePlayback}
+                disabled={!ttsAudio || audioError}
               >
                 {isBeatPlaying ? (
                   <Pause className="w-10 h-10" />
@@ -479,33 +475,15 @@ export function RapBattle() {
                   <Play className="w-10 h-10 ml-1" />
                 )}
               </Button>
-              {ttsAudio && (
-                <Button
-                  size="lg"
-                  className="rounded-full w-20 h-20"
-                  variant="secondary"
-                  aria-label="Play Vocals"
-                  onClick={toggleVocalsPlayback}
-                >
-                  {isVocalsPlaying ? (
-                    <Pause className="w-10 h-10" />
-                  ) : (
-                    <Speaker className="w-10 h-10" />
-                  )}
-                </Button>
-              )} 
-              */}
             </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="outline">
-                <Download className="h-5 w-5" />{" "}
-                <span className="hidden sm:inline ml-2">Download</span>
-              </Button>
-              <Button variant="outline">
-                <Share2 className="h-5 w-5" />{" "}
-                <span className="hidden sm:inline ml-2">Share</span>
-              </Button>
+              
+              {/** 
+               
+               <ShareBattle  />
+               
+               */}
             </div>
           </div>
           {audioError && (
@@ -580,7 +558,7 @@ export function RapBattle() {
 
   return (
     <section className="container max-w-5xl py-12">
-      {isLoading && (<Loader />)}
+      {isLoading && <Loader />}
       <div className="text-center mb-10">
         <h2 className="text-4xl font-bold font-headline tracking-tighter sm:text-5xl md:text-6xl">
           BATTLE MATCH UP
