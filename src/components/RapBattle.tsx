@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Download, Share2, Music, MicVocal, Wand2, Play, Pause, AlertTriangle, Speaker, Trophy } from "lucide-react";
+import { Loader2, Download, Share2, Music, MicVocal, Wand2, Play, Pause, AlertTriangle, Speaker } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "./ui/skeleton";
@@ -19,8 +19,6 @@ import { Progress } from "./ui/progress";
 import { Character } from '@/types'
 import { CharacterCard } from "./CharacterCard";
 import { characters } from "@/data/characters";
-import { judges } from "@/data/panel";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 
 const formSchema = z.object({
@@ -42,18 +40,9 @@ type GenerateTtsAudioOutput = {
   audioDataUri: string;
 };
 
-type DetermineWinnerOutput = {
-    winnerName: string;
-    judge1Name: string;
-    judge1Comment: string;
-    judge2Name: string;
-    judge2Comment: string;
-};
-
 type ApiReponse = {
   lyrics: GenerateRapLyricsOutput,
-  audio: GenerateTtsAudioOutput,
-  winner: DetermineWinnerOutput,
+  audio: GenerateTtsAudioOutput
 }
 
 const beats = [
@@ -70,7 +59,6 @@ export function RapBattle() {
   const [loadingStatus, setLoadingStatus] = useState("");
   const [lyrics, setLyrics] = useState<GenerateRapLyricsOutput | null>(null);
   const [ttsAudio, setTtsAudio] = useState<GenerateTtsAudioOutput | null>(null);
-  const [winner, setWinner] = useState<DetermineWinnerOutput | null>(null);
   const [selectedBeat, setSelectedBeat] = useState(beats[0]);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [selectedCharacter1, setSelectedCharacter1] = useState<Character| null>(null);
@@ -171,7 +159,6 @@ export function RapBattle() {
     setIsLoading(true);
     setLyrics(null);
     setTtsAudio(null);
-    setWinner(null);
     setLoadingStatus("Generating rap battle...");
 
     try {
@@ -198,7 +185,6 @@ export function RapBattle() {
       const battleData: ApiReponse = await response.json();
       setLyrics(battleData.lyrics);
       setTtsAudio(battleData.audio);
-      setWinner(battleData.winner);
 
       toast({
         title: "Battle Generated!",
@@ -221,7 +207,6 @@ export function RapBattle() {
   const resetBattle = () => {
     setLyrics(null);
     setTtsAudio(null);
-    setWinner(null);
     form.reset();
     if(beatAudioRef.current) {
         beatAudioRef.current.pause();
@@ -233,10 +218,7 @@ export function RapBattle() {
     setIsVocalsPlaying(false);
   }
 
-  if (lyrics && winner) {
-    const winnerIsCharacter1 = winner.winnerName === selectedCharacter?.name;
-    const winnerCharacter = winnerIsCharacter1 ? selectedCharacter : selectedCharacter1;
-    
+  if (lyrics) {
     return (
       <section className={cn(
         "container max-w-5xl py-12 transition-opacity duration-1000",
@@ -324,39 +306,6 @@ export function RapBattle() {
                 </CardContent>
             </Card>
         </div>
-        
-        <Card className="mt-12 shadow-2xl">
-            <CardHeader className="text-center">
-                <CardTitle className="text-3xl font-headline tracking-tighter sm:text-4xl flex items-center justify-center gap-4">
-                    <Trophy className="h-10 w-10 text-yellow-400" />
-                    And the Winner Is...
-                </CardTitle>
-                <CardDescription className="text-2xl font-bold font-headline text-primary mt-2">
-                    {winner.winnerName}!
-                </CardDescription>
-            </CardHeader>
-=
-            <CardContent  className="grid md:grid-cols-2 gap-8 pt-6">
-                <div className="flex flex-col items-center text-center">
-                    <Avatar className="w-24 h-24 mb-4 border-4 border-secondary">
-                        <AvatarImage src={judges[0].image} alt={judges[0].name} />
-                        <AvatarFallback>{judges[0].name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <h4 className="font-bold text-xl font-headline">{winner.judge1Name}</h4>
-                    <p className="text-muted-foreground mt-2 italic">"{winner.judge1Comment}"</p>
-                </div>
-                 <div className="flex flex-col items-center text-center">
-                    <Avatar className="w-24 h-24 mb-4 border-4 border-secondary">
-                        <AvatarImage src={judges[1].image} alt={judges[1].name} />
-                        <AvatarFallback>{judges[1].name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <h4 className="font-bold text-xl font-headline">{winner.judge2Name}</h4>
-                    <p className="text-muted-foreground mt-2 italic">"{winner.judge2Comment}"</p>
-                </div>
-            </CardContent>
-   
-        </Card>
-
 
         <div className="mt-12 text-center">
             <Button onClick={resetBattle} size="lg">

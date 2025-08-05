@@ -6,7 +6,6 @@ import { characters } from '@/data/characters';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import wav from 'wav';
-import { judges } from '@/data/panel';
 
 // Schemas
 const GenerateRapLyricsInputSchema = z.object({
@@ -50,28 +49,6 @@ const GenerateTtsAudioOutputSchema = z.object({
 });
 type GenerateTtsAudioOutput = z.infer<typeof GenerateTtsAudioOutputSchema>;
 
-const DetermineWinnerInputSchema = z.object({
-    character1Name: z.string(),
-    character2Name: z.string(),
-    lyricsCharacter1: z.string(),
-    lyricsCharacter2: z.string(),
-    topic: z.string(),
-    judge1Name: z.string(),
-    judge1Hint: z.string(),
-    judge2Name: z.string(),
-    judge2Hint: z.string(),
-});
-type DetermineWinnerInput = z.infer<typeof DetermineWinnerInputSchema>;
-
-
-const DetermineWinnerOutputSchema = z.object({
-    winnerName: z.string().describe("The name of the character who won the rap battle."),
-    judge1Name: z.string().describe("The name of the first judge."),
-    judge1Comment: z.string().describe("The first judge's commentary on the battle."),
-    judge2Name: z.string().describe("The name of the second judge."),
-    judge2Comment: z.string().describe("The second judge's commentary on the battle."),
-});
-type DetermineWinnerOutput = z.infer<typeof DetermineWinnerOutputSchema>;
 
 // Helper function
 async function toWav(
@@ -185,45 +162,6 @@ const generateTtsAudioFlow = ai.defineFlow(
   }
 );
 
-const determineWinnerFlow = ai.defineFlow(
-    {
-        name: 'determineWinnerFlow',
-        inputSchema: DetermineWinnerInputSchema,
-        outputSchema: DetermineWinnerOutputSchema,
-    },
-    async (input) => {
-        const prompt = ai.definePrompt({
-            name: 'determineWinnerPrompt',
-            input: { schema: DetermineWinnerInputSchema },
-            output: { schema: DetermineWinnerOutputSchema },
-            prompt: `You are a panel of two rap battle judges. Your task is to determine the winner of a rap battle based on the provided lyrics.
-            Evaluate the lyrics based on:
-            - Technique (rhyme scheme, rhythm)
-            - Punchlines (clever and impactful lines)
-            - Delivery (how well the character's personality is conveyed)
-            - Wordplay (creative use of language)
-            - Evilness (how mean and funny the disses are)
-
-            Here is the battle information:
-            - Topic: {{{topic}}}
-            - Character 1 ({{{character1Name}}}):
-            {{{lyricsCharacter1}}}
-            - Character 2 ({{{character2Name}}}):
-            {{{lyricsCharacter2}}}
-
-            The judges are:
-            - Judge 1: {{{judge1Name}}}. Personality hint: {{{judge1Hint}}}
-            - Judge 2: {{{judge2Name}}}. Personality hint: {{{judge2Hint}}}
-
-            Based on your evaluation, decide the winner and provide a brief, funny, and in-character comment from each judge explaining their decision.
-            `,
-        });
-
-        const { output } = await prompt(input);
-        return output!;
-    }
-);
-
 
 // Main handler for the API route
 export async function POST(req: Request) {
@@ -280,21 +218,7 @@ export async function POST(req: Request) {
     };
     const audioResult = await generateTtsAudioFlow(audioInput);
 
-    // Determine Winner
-    const winnerInput: DetermineWinnerInput = {
-        character1Name: character1.name,
-        character2Name: character2.name,
-        lyricsCharacter1: lyricsResult.lyricsCharacter1,
-        lyricsCharacter2: lyricsResult.lyricsCharacter2,
-        topic,
-        judge1Name: judges[0].name,
-        judge1Hint: judges[0].hint,
-        judge2Name: judges[1].name,
-        judge2Hint: judges[1].hint,
-    };
-    const winnerResult = await determineWinnerFlow(winnerInput);
-
-    return NextResponse.json({ lyrics: lyricsResult, audio: audioResult, winner: winnerResult });
+    return NextResponse.json({ lyrics: lyricsResult, audio: audioResult });
   } catch (error: any) {
     console.error('API Route Error:', error);
     const errorMessage =
