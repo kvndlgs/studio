@@ -26,7 +26,6 @@ const GenerateRapLyricsOutputSchema = z.object({
     .string()
     .describe('The rap lyrics for the second character.'),
 });
-type GenerateRapLyricsOutput = z.infer<typeof GenerateRapLyricsOutputSchema>;
 
 const GenerateTtsAudioInputSchema = z.object({
   lyricsCharacter1: z.string().describe('The lyrics for the first character.'),
@@ -47,8 +46,6 @@ const GenerateTtsAudioOutputSchema = z.object({
       "The generated audio as a data URI. Expected format: 'data:audio/wav;base64,<encoded_data>'."
     ),
 });
-type GenerateTtsAudioOutput = z.infer<typeof GenerateTtsAudioOutputSchema>;
-
 
 // Helper function
 async function toWav(
