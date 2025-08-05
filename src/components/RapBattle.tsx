@@ -211,7 +211,7 @@ export function RapBattle() {
       };
     }
   }, [ttsAudio]);
-
+/** 
   const toggleBeatPlayback = () => {
     if (audioError || !beatAudioRef.current) return;
     if (isBeatPlaying) {
@@ -232,26 +232,32 @@ export function RapBattle() {
     }
     setIsVocalsPlaying(!isVocalsPlaying);
   };
-
+*/
   const handleTogglePlayback = () => {
     if (audioError || !beatAudioRef.current) return;
+    
     if (isBeatPlaying) {
-      beatAudioRef.current?.pause();
+      // Stop both beat and vocals
+      beatAudioRef.current.pause();
+      if (vocalsAudioRef.current) {
+        vocalsAudioRef.current.pause();
+        vocalsAudioRef.current.currentTime = 0;
+      }
+      setIsBeatPlaying(false);
+      setIsVocalsPlaying(false);
     } else {
-      beatAudioRef.current?.play().catch(() => setAudioError(true));
+      // Start beat immediately
+      beatAudioRef.current.play().catch(() => setAudioError(true));
+      setIsBeatPlaying(true);
+      
+      // Start vocals after delay
+      setTimeout(() => {
+        if (vocalsAudioRef.current && beatAudioRef.current && !beatAudioRef.current.paused) {
+          vocalsAudioRef.current.play().catch(console.error);
+          setIsVocalsPlaying(true);
+        }
+      }, 500); // 500ms delay - adjust as needed
     }
-    if (!vocalsAudioRef.current) return;
-    if (isVocalsPlaying) {
-      vocalsAudioRef.current.pause();
-      vocalsAudioRef.current.currentTime = 0;
-    } else {
-      vocalsAudioRef.current.play();
-    }
-    setIsBeatPlaying(!isBeatPlaying);
-
-    setTimeout(() => {
-      setIsVocalsPlaying(!isVocalsPlaying);
-    }, 500);
   };
 
   const handleGenerate: SubmitHandler<FormValues> = async (data) => {

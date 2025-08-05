@@ -5,13 +5,13 @@ import { getFunctions } from 'firebase/functions';
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  "projectId": "suckerpunch",
-  "appId": "1:469315916206:web:cc34c554c425cbf13b383f",
-  "storageBucket": "suckerpunch.firebasestorage.app",
-  "apiKey": "AIzaSyA9kn5DxbBL3KTqPrKGZKML3IsmtxuCwOw",
-  "authDomain": "suckerpunch.firebaseapp.com",
-  "measurementId": "G-YSYZ0LDK67",
-  "messagingSenderId": "469315916206"
+  "projectId": process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  "appId": process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  "storageBucket": process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  "apiKey": process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  "authDomain": process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  "measurementId": process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  "messagingSenderId": process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
