@@ -257,7 +257,7 @@ export function RapBattle() {
             </CardHeader>
             <CardContent className="flex flex-col items-center justify-center text-center">
                 {winnerChar && (
-                    <Image src={winnerChar.faceoff || ''} alt={winnerChar.name} width={200} height={200} className="rounded-full border-4 border-yellow-300 shadow-2xl mb-4" />
+                    <img src={winnerChar.image || ''} alt={winnerChar.name} className="rounded-full border-4 border-yellow-300 shadow-2xl mb-4" />
                 )}
                 <h3 className="text-6xl font-bold font-headline drop-shadow-md">{winner}</h3>
             </CardContent>
@@ -313,11 +313,6 @@ export function RapBattle() {
             {selectedCharacter?.name} Vs. {selectedCharacter1?.name}.
           </p>
         </div>
-
-        {winner && <WinnerDisplay />}
-        {judges && <JudgesPanel />}
-
-
         <Card className="my-8 shadow-2xl overflow-hidden">
             <div className="p-4 md:p-6 bg-muted/30 flex flex-col sm:flex-row gap-4 sm:gap-6 items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -393,7 +388,10 @@ export function RapBattle() {
                 </CardContent>
             </Card>
         </div>
-
+        <div>
+        {judges && <JudgesPanel />}
+        {winner && <WinnerDisplay />}
+        </div>
         <div className="mt-12 text-center">
             <Button onClick={resetBattle} size="lg">
                 <Wand2 className="mr-2 h-5 w-5"/> New Battle
