@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { AudioProcessor } from "@/utils/audio";
-import { BattleDatabaseServer } from "@/lib/database.server"; // UPDATED import
+import { BattleDatabaseServer } from "@/lib/database.server";
 import { BattleDataAPI } from "@/types";
 
 interface MixAudioRequest extends NextApiRequest {
@@ -16,7 +16,7 @@ interface MixAudioRequest extends NextApiRequest {
   }
 
   export default async function handler(
-    req: MixAudioRequest,
+    req: NextApiRequest,
     res: NextApiResponse<MixAudioResponse>
   ) {
     if (req.method !== 'POST') {
@@ -37,6 +37,10 @@ interface MixAudioRequest extends NextApiRequest {
       
       if (!battle.vocalsUrl) {
           return res.status(400).json({ success: false, error: 'Battle has no vocals to mix' });
+      }
+
+      if (!battle.beat.url) {
+          return res.status(400).json({ success: false, error: 'Battle has no beat to mix' });
       }
 
       // Process audio

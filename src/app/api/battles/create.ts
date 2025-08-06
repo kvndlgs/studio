@@ -111,9 +111,8 @@ export default async function handler(
         await BattleDatabaseServer.store(battleData);
 
         if (body.vocalsUrl && beat.url) {
-            processAudio(battleId).catch(error => {
-                console.error('Background audio processing failed to start:', error);
-            });
+            // No need to await this, let it run in the background
+            processAudio(battleId);
         }
 
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
