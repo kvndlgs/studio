@@ -1,8 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { AudioProcessor } from "@/utils/audio";
-import { BattleDatabase } from "@/lib/database";
-import { BattleData, BattleDataAPI } from "@/types"; // Import BattleData and BattleDataAPI
-import { Timestamp } from "firebase/firestore"; // Import Timestamp
+import { BattleDatabaseServer } from "@/lib/database.server"; // UPDATED import
+import { BattleDataAPI } from "@/types";
 
 interface MixAudioRequest extends NextApiRequest {
     body: {
@@ -26,32 +25,29 @@ interface MixAudioRequest extends NextApiRequest {
 
     try {
       const { battleId } = req.body;
+      if (!battleId) {
+        return res.status(400).json({ success: false, error: 'Battle ID is required' });
+      }
 
-      // Get battle data - this will return BattleData (with Timestamps)
-      const battle: BattleData | null = await BattleDatabase.getById(battleId); // Assuming you use getById on the server side
+      // Get battle data using the server-side database method
+      const battle: BattleDataAPI | null = await BattleDatabaseServer.getById(battleId);
       if (!battle) {
         return res.status(404).json({ success: false, error: 'Battle not found' });
+      }
+      
+      if (!battle.vocalsUrl) {
+          return res.status(400).json({ success: false, error: 'Battle has no vocals to mix' });
       }
 
       // Process audio
       const downloadUrl = await AudioProcessor.processFullBattle(
         battleId,
         battle.beat.url,
-        battle.vocalsUrl // This should now be a string
+        battle.vocalsUrl
       );
 
-      // Create a BattleDataAPI object for storing
-      const battleDataAPI: BattleDataAPI = {
-          ...battle, // Copy other properties
-          audioDownloadUrl: downloadUrl,
-          // Convert Timestamp to Date for BattleDataAPI
-          createdAt: (battle.createdAt as Timestamp).toDate(),
-          expiresAt: (battle.expiresAt as Timestamp).toDate(),
-      };
-
-
-      // Update battle with download URL using the BattleDataAPI object
-      await BattleDatabase.store(battleDataAPI); // Pass the converted object
+      // Update battle with download URL
+      await BattleDatabaseServer.updateAudioUrl(battleId, downloadUrl);
 
       res.status(200).json({
         success: true,

@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
-import { BattleData, BattleDataAPI } from '../types/index';
+import { BattleDataAPI, CreateBattleRequest } from '../types/index';
 import { BattleDatabase } from '@/lib/database';
 
 export function useBattle(battleId: string | null) {
-  const [battle, setBattle] = useState<BattleData | null>(null);
+  const [battle, setBattle] = useState<BattleDataAPI | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!battleId) return;
+    if (!battleId) {
+      setBattle(null);
+      setError(null);
+      return;
+    }
 
     const fetchBattle = async () => {
       setLoading(true);
@@ -18,13 +22,15 @@ export function useBattle(battleId: string | null) {
         const battleData = await BattleDatabase.get(battleId);
         if (battleData) {
           setBattle(battleData);
-          // Increment view count
-          await BattleDatabase.incrementViewCount(battleId);
+          // Increment view count in background
+          BattleDatabase.incrementViewCount(battleId).catch(console.error);
         } else {
           setError('Battle not found');
+          setBattle(null);
         }
       } catch (err) {
         setError('Failed to load battle');
+        setBattle(null);
         console.error('Error fetching battle:', err);
       } finally {
         setLoading(false);
@@ -42,26 +48,38 @@ export function useCreateBattle() {
   const [error, setError] = useState<string | null>(null);
 
   const createBattle = async (
-    battleData: Omit<BattleDataAPI, 'id' | 'createdAt' | 'expiresAt' | 'viewCount'>
+    battleData: CreateBattleRequest
   ): Promise<{ battleId: string; shareUrl: string } | null> => {
     setCreating(true);
     setError(null);
 
     try {
-      const response = await fetch('/app/api/battles/create', {
+      const response = await fetch('/api/battles/create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(battleData),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create battle');
+        let errorMessage = 'Failed to create battle';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          // If response isn't JSON, use status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
-      const result = await response.json();
+      const result: { battleId: string; shareUrl: string } = await response.json();
       return result;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create battle');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create battle';
+      setError(errorMessage);
+      console.error('Create battle error:', err);
       return null;
     } finally {
       setCreating(false);

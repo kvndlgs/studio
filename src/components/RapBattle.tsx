@@ -39,10 +39,9 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { Skeleton } from "./ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Progress } from "./ui/progress";
-import { Character, Judge } from "@/types";
+import { Character, Judge, CreateBattleRequest, BattleDataAPI } from "@/types";
 import { CharacterCard } from "@/components/CharacterCard";
 import { characters } from "@/data/characters";
 import { judges as judgesData } from "@/data/panel";
@@ -50,6 +49,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Loader } from "@/components/Loader";
 import ShareBattle from '@/components/ShareBattle';
 import { useCreateBattle } from "@/hooks/use-battle";
+import { BattleDatabase } from '@/lib/database';
 
 const formSchema = z.object({
   topic: z
@@ -160,7 +160,10 @@ export function RapBattle() {
   const { toast } = useToast();
   const [winner, setWinner] = useState<string | null>(null);
   const [judges, setJudges] = useState<JudgeCommentary[] | null>(null);
+  const [createdBattle, setCreatedBattle] = useState<BattleDataAPI | null>(null);
 
+
+  const { createBattle, creating, error } = useCreateBattle();
 
 
 
@@ -217,30 +220,7 @@ export function RapBattle() {
       };
     }
   }, [ttsAudio]);
-  /** 
-  const toggleBeatPlayback = () => {
-    if (audioError || !beatAudioRef.current) return;
-    if (isBeatPlaying) {
-      beatAudioRef.current?.pause();
-    } else {
-      beatAudioRef.current?.play().catch(() => setAudioError(true));
-    }
-    setIsBeatPlaying(!isBeatPlaying);
-  };
-
-  const toggleVocalsPlayback = () => {
-    if (!vocalsAudioRef.current) return;
-    if (isVocalsPlaying) {
-      vocalsAudioRef.current.pause();
-      vocalsAudioRef.current.currentTime = 0;
-    } else {
-      vocalsAudioRef.current.play();
-    }
-    setIsVocalsPlaying(!isVocalsPlaying);
-  };
-*/
-
-
+   
   const handleTogglePlayback = () => {
     if (audioError || !beatAudioRef.current) return;
 
@@ -269,6 +249,94 @@ export function RapBattle() {
           setIsVocalsPlaying(true);
         }
       }, 500); // Delay for vocals to come in after beat
+    }
+  };
+  
+  const handleCreateBattle = async () => {
+    if (!selectedCharacter || !selectedCharacter1) {
+      toast({
+        variant: "destructive",
+        title: "Please select characters",
+        description: "You need to select both characters before starting the battle.",
+      });
+      return;
+    }
+  
+    if (!lyrics) {
+      toast({
+        variant: "destructive",
+        title: "Please generate lyrics first",
+        description: "Generate lyrics before creating the battle",
+      });
+      return;
+    }
+  
+    try {
+      setIsLoading(true);
+      setLoadingStatus("Creating battle...");
+  
+      // Create the battle request data matching the new interface
+      const battleRequest: CreateBattleRequest = {
+        character1Id: selectedCharacter.id,
+        character2Id: selectedCharacter1.id,
+        topic: form.getValues().topic,
+        beat: {
+          id: selectedBeat.id,
+          name: selectedBeat.name,
+          url: selectedBeat.audioSrc,
+        },
+        lyrics: {
+          character1: lyrics.lyricsCharacter1,
+          character2: lyrics.lyricsCharacter2,
+        },
+        winner: winner, // Keep as is (string | null)
+        judges: judges ? {
+          judge1Name: judges[0]?.judgeName,
+          commentary1: judges[0]?.commentary,
+          judge2Name: judges[1]?.judgeName,
+          commentary2: judges[1]?.commentary,
+        } : null, // Explicitly set to null if no judges
+        vocalsUrl: ttsAudio?.audioDataUri || null, // Explicitly set to null if no audio
+        isPublic: true,
+      };
+  
+      const result = await createBattle(battleRequest);
+  
+      if (result) {
+
+        toast({
+          title: "Battle created successfully",
+          description: "Your battle is now shareable!",
+        });
+
+        const completeBattle = await BattleDatabase.get(result.battleId);
+          if (completeBattle) {
+                setCreatedBattle(completeBattle); // Add this state
+          }
+        // Copy share URL to clipboard
+        try {
+          await navigator.clipboard.writeText(result.shareUrl);
+          toast({
+            title: "Share link copied",
+            description: "The battle link has been copied to your clipboard",
+          });
+        } catch (clipboardError) {
+          console.error('Failed to copy to clipboard:', clipboardError);
+          // Still show success even if clipboard fails
+        }
+  
+        return result;
+      }
+    } catch (error: any) {
+      console.error("Failed to create battle:", error);
+      toast({
+        variant: 'destructive',
+        title: "Failed to create battle",
+        description: error.message || "There was a problem creating the battle.",
+      });
+    } finally {
+      setIsLoading(false);
+      setLoadingStatus("");
     }
   };
 
@@ -310,12 +378,13 @@ export function RapBattle() {
         const errorData = await response.json();
         throw new Error(errorData.error || `API error: ${response.statusText}`);
       }
-
+      
       const battleData: ApiReponse = await response.json();
 
       setLoadingStatus("Synthesizing trash talk...");
       setLyrics(battleData.lyrics);
       setTtsAudio(battleData.audio);
+
 
       if (battleData.winner) {
         setWinner(battleData.winner);
@@ -429,6 +498,7 @@ export function RapBattle() {
     );
   };
 
+
   if (lyrics) {
     return (
       <section
@@ -478,12 +548,7 @@ export function RapBattle() {
             </div>
 
             <div className="flex items-center gap-2">
-              
-              {/** 
-               
-               <ShareBattle  />
-               
-               */}
+            
             </div>
           </div>
           {audioError && (
@@ -510,11 +575,17 @@ export function RapBattle() {
         </Card>
 
         <div className="grid md:grid-cols-2 gap-8">
+
           <Card className="transform transition-transform duration-500 hover:scale-105 hover:shadow-2xl">
+            { createdBattle && (
+              <div className="mt-3">
+                   <ShareBattle battle={createdBattle} />
+              </div>
+             )}
             <CardHeader className="flex-row items-center gap-4">
               <div>
                 <img
-                  src={selectedCharacter?.faceoff}
+                  src={selectedCharacter?.image}
                   alt={selectedCharacter?.name}
                 />
               </div>
@@ -530,7 +601,7 @@ export function RapBattle() {
             <CardHeader className="flex-row items-center gap-4">
               <div>
                 <img
-                  src={selectedCharacter1?.faceoff}
+                  src={selectedCharacter1?.image}
                   alt={selectedCharacter1?.name}
                 />
               </div>
@@ -547,10 +618,14 @@ export function RapBattle() {
           {judges && <JudgesPanel />}
           {winner && <WinnerDisplay />}
         </div>
-        <div className="mt-12 text-center">
+        <div className="mt-12 text-center flex items-center justify-around">
+          <Button onClick={handleCreateBattle} disabled={isLoading || creating} size="lg" className="mr-2 h-5 w-5">
+            Generate Shareable link
+          </Button>
           <Button onClick={resetBattle} size="lg">
             <Wand2 className="mr-2 h-5 w-5" /> New Battle
           </Button>
+        
         </div>
       </section>
     );
