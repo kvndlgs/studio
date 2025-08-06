@@ -36,6 +36,7 @@ import {
   Speaker,
   Gavel,
   Award,
+  Share
 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -619,7 +620,12 @@ export function RapBattle() {
           {winner && <WinnerDisplay />}
         </div>
         <div className="mt-12 text-center flex items-center justify-around">
-          <Button onClick={handleCreateBattle} disabled={isLoading || creating} size="lg" className="mr-2 h-5 w-5">
+          <Button 
+          onClick={handleCreateBattle} 
+          disabled={isLoading || creating} 
+          size="lg" 
+          >
+            <Share className="mr-2 h-5 w-5" />
             Generate Shareable link
           </Button>
           <Button onClick={resetBattle} size="lg">
@@ -634,19 +640,24 @@ export function RapBattle() {
   return (
     <section className="container max-w-5xl py-12">
       {isLoading && <Loader />}
+    
       <div className="text-center mb-10">
-        <h2 className="text-4xl font-bold font-headline tracking-tighter sm:text-5xl md:text-6xl">
+        <h2 className="text-xl font-bold font-headline sm:text-xl md:text-2xl">
           BATTLE MATCH UP
         </h2>
       </div>
+      
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(handleGenerate)}
           className="space-y-8"
         >
           <div className="max-w-full container flex flex-col items-between gap-4">
+
             <h4 className="text-bold"> Choose MC'S </h4>
+ 
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+
               {characters.map((character) => (
                 <CharacterCard
                   key={character.id}
@@ -656,11 +667,14 @@ export function RapBattle() {
                   onClick={() => setSelectedCharacter(character)}
                 />
               ))}
+ 
             </div>
             <div className="w-full h-auto text-center">
-              <h1>VS.</h1>
+              <h1 className="text-white text-lg font-bold font-headline">VS.</h1>
             </div>
+
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+ 
               {characters.map((character) => (
                 <CharacterCard
                   key={character.id}
@@ -670,8 +684,11 @@ export function RapBattle() {
                   onClick={() => setSelectedCharacter1(character)}
                 />
               ))}
+ 
             </div>
+  
           </div>
+
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-2xl font-headline">
