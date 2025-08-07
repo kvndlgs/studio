@@ -21,3 +21,10 @@ Realistic Fish Head and Bender using genkit as a tool; option to select other AP
 - Use bold and playful icons, that reflect elements in Hip Hop culture, music production, or the app's functions.
 - Responsive design that adapts seamlessly to different screen sizes for optimal viewing.
 - Smooth transitions and subtle animations to enhance user interaction and experience.
+
+
+## TO DO
+
+- Integrating Chirp 3 for instant voice cloning 
+- Voting system for users
+- Form for new characters and features requests

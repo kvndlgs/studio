@@ -147,11 +147,8 @@ export function RapBattle() {
   const [lyrics, setLyrics] = useState<GenerateRapLyricsOutput | null>(null);
   const [ttsAudio, setTtsAudio] = useState<GenerateTtsAudioOutput | null>(null);
   const [selectedBeat, setSelectedBeat] = useState(beats[0]);
-  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
-    null
-  );
-  const [selectedCharacter1, setSelectedCharacter1] =
-    useState<Character | null>(null);
+  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
+  const [selectedCharacter1, setSelectedCharacter1] = useState<Character | null>(null);
   const [isResultsVisible, setIsResultsVisible] = useState(false);
   const [isBeatPlaying, setIsBeatPlaying] = useState(false);
   const [isVocalsPlaying, setIsVocalsPlaying] = useState(false);
@@ -249,7 +246,7 @@ export function RapBattle() {
           vocalsAudioRef.current.play().catch(console.error);
           setIsVocalsPlaying(true);
         }
-      }, 500); // Delay for vocals to come in after beat
+      }, 2000); // Delay for vocals to come in after beat
     }
   };
   
@@ -323,13 +320,14 @@ export function RapBattle() {
           });
         } catch (clipboardError) {
           console.error('Failed to copy to clipboard:', clipboardError);
+          console.log('Failed to copy to clipboard:', clipboardError);
           // Still show success even if clipboard fails
         }
   
         return result;
       }
     } catch (error: any) {
-      console.error("Failed to create battle:", error);
+      console.error("Failed to create battle:", error.message);
       toast({
         variant: 'destructive',
         title: "Failed to create battle",

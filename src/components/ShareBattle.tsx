@@ -11,7 +11,7 @@ export default function ShareBattle({ battle }: ShareBattleProps) {
   const [downloading, setDownloading] = useState(false);
   const { toast } = useToast(); // Add toast for better UX
 
-  const shareUrl = `${window.location.origin}/battle/${battle.id}`;
+  const shareUrl = `${window.location.origin}/battles/${battle.id}`;
 
   const handleCopyLink = async () => {
     setCopying(true);
@@ -22,7 +22,7 @@ export default function ShareBattle({ battle }: ShareBattleProps) {
         description: "Share link has been copied to your clipboard",
       });
     } catch (err) {
-      console.error('Failed to copy link');
+      console.error('Failed to copy link', shareUrl);
       toast({
         variant: "destructive",
         title: "Copy failed",

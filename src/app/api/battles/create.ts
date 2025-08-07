@@ -58,6 +58,7 @@ async function processAudio(battleId: string) {
         console.log(`Audio processing initiated for battle ${battleId}:`, result);
     } catch (error) {
         console.error(`Audio processing failed for battle ${battleId}:`, error);
+        console.log(`Failed to generate audio for battle ${battleId}:`, error)
     }
 }
 
@@ -120,11 +121,12 @@ export default async function handler(
         res.status(201).json({
             success: true,
             battleId,
-            shareUrl: `${baseUrl}/battle/${battleId}`,
+            shareUrl: `${baseUrl}/battles/${battleId}`,
         });
 
     } catch (error) {
         console.error('Failed to create battle:', error);
+        console.log('Failed to create battle:', error);
         res.status(500).json({ 
             error: error instanceof Error ? error.message : 'Failed to create battle' 
         });
